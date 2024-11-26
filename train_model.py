@@ -47,7 +47,7 @@ with open("./static/model.onnx", "wb") as f:
     f.write(onx.SerializeToString())
 
 # Verify the IR version
-loaded_model = onnx.load("model.onnx")
+loaded_model = onnx.load("./static/model.onnx")
 print(f"Saved model IR version: {loaded_model.ir_version}")
 
 # Print model performance metrics

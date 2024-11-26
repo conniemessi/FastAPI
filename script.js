@@ -205,7 +205,7 @@ async function getFinalDiagnosis_fix() {
             },
             // 第二轮：深入讨论
             {
-                doctor1: `我同意检验科的意见。患者的实验室指标和临床表现都很特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
+                doctor1: `我同意检验科的意见。患者的实验室指标和临床表现都很��别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
                 doctor2: `从肾病科的角度，我们观察到患者的血压偏低，这与肾小管钠离子重吸收障碍相符。但我建议还需要进行醛固酮和肾素活性的检测。`,
                 doctor3: `补充一点，患者的血气分析显示代谢性碱中毒，这与远曲小管功能障碍导致的氯离子重吸收缺陷是一致的。`
             },
@@ -416,7 +416,7 @@ async function makePrediction(features) {
 const nameMapping = {
     '血钾': 'serum_potassium',
     '尿钾': 'urine_potassium',
-    '血压': 'high_blood_pressure',
+    '高血压(yes/no)': 'high_blood_pressure',
     'pH值': 'PH',
     '标准碳酸氢根': 'bicarbonate'
 };
@@ -527,10 +527,21 @@ function getStatus(testName, value) {
                 ? {text: '异常', class: 'abnormal'} 
                 : {text: '正常', class: 'normal'};
         case '尿钾':
-            return value > 180 
+            return (value < 25 || value > 125)
                 ? {text: '异常', class: 'abnormal'} 
                 : {text: '正常', class: 'normal'};
-        // Add other cases as needed
+        case '高血压(yes/no)':
+            return value.toLowerCase() === 'yes'
+                ? {text: '异常', class: 'abnormal'} 
+                : {text: '正常', class: 'normal'};
+        case 'ph值':
+            return (value < 7.35 || value > 7.45)
+                ? {text: '异常', class: 'abnormal'} 
+                : {text: '正常', class: 'normal'};
+        case '标准碳酸氢根':
+            return (value < 22 || value > 27)
+                ? {text: '异常', class: 'abnormal'} 
+                : {text: '正常', class: 'normal'};
         default:
             return {text: '正常', class: 'normal'};
     }

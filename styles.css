@@ -534,7 +534,7 @@ button:hover {
     padding: 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 0.9em;
+    font-size: 1.0em;
 }
 
 .add-test-btn {
@@ -546,6 +546,7 @@ button:hover {
     cursor: pointer;
     margin-top: 10px;
     transition: all 0.3s ease;
+    font-size: 20px;
 }
 
 .add-test-btn:hover {
@@ -810,7 +811,7 @@ button:hover {
 }
 
 .avatar-title {
-    font-size: 18px;
+    font-size: 22px;
     color: #000000;
     font-weight: bold;
 }
@@ -835,22 +836,25 @@ button:hover {
     padding: 12px;
     border: 1px solid #e0e0e0;
     text-align: left;
+    font-size: 18px;
 }
 
 .status {
     padding: 4px 8px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .status.normal {
     background-color: #e8f5e9;
     color: #2e7d32;
+    font-size: 14px;
 }
 
 .status.abnormal {
     background-color: #ffebee;
     color: #c62828;
+    font-size: 14px;
 }
 
 .prediction-result {
@@ -916,6 +920,7 @@ button:hover {
     padding: 1rem;
     background: white;
     border-bottom: 1px solid #eee;
+    font-size: 18px;
 }
 
 .test-table th {
@@ -925,7 +930,6 @@ button:hover {
 }
 
 .test-name,
-.test-value,
 .test-unit {
     width: 100%;
     padding: 8px;
@@ -1013,18 +1017,21 @@ button:hover {
     text-align: left;
     font-weight: normal;
     color: #666;
+    font-size: 18px;
 }
 
 .test-results-table td {
     padding: 8px 12px;
+    font-size: 18px;
 }
 
 .test-value {
     width: 100%;
-    padding: 8px;
+    padding: 4px;
     border: 1px solid #E5E7EB;
     border-radius: 4px;
     text-align: center;
+    font-size: 18px;
 }
 
 .test-unit {
@@ -1033,18 +1040,8 @@ button:hover {
 }
 
 .add-test-button {
-    margin-top: 20px;
+    margin-top: 10px;
     text-align: center;
-}
-
-.add-test-btn {
-    color: #4DA1FF;
-    border: 1px dashed #4DA1FF;
-    background: none;
-    padding: 8px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
 }
 
 .add-test-btn:hover {
