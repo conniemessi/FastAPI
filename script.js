@@ -1,5 +1,9 @@
 let currentTestId = 1;
 
+// Global variables for model and scaler
+let scalerParams;
+let session;
+
 function showLoading() {
     document.getElementById('loadingIndicator').style.display = 'block';
 }
@@ -7,17 +11,6 @@ function showLoading() {
 function hideLoading() {
     document.getElementById('loadingIndicator').style.display = 'none';
 }
-
-// function updateSteps(stepNumber) {
-//     document.querySelectorAll('.step').forEach((step, index) => {
-//         step.classList.toggle('active', index < stepNumber);
-//         if (index < stepNumber) {
-//             step.classList.remove('disabled');
-//         } else if (index > stepNumber) {
-//             step.classList.add('disabled');
-//         }
-//     });
-// }
 
 function addTestResult() {
     const tbody = document.querySelector('.test-results-table tbody');
@@ -36,7 +29,6 @@ function addTestResult() {
     `;
     tbody.appendChild(newRow);
 }
-
 
 function updateDoctorResponse(message, section) {
     const doctorBubble = section === 'history' 
@@ -85,20 +77,7 @@ async function analyzeSymptoms() {
         const formattedResponse = formatDoctorResponse(data.analysis);
         updateDoctorResponse(formattedResponse, 'symptoms');
 
-        // if (data.analysis.toLowerCase().includes('yes')) {
-        //     document.getElementById('testsSection').style.display = 'block';
-        //     updateSteps(2);
-        //     // setupGeneticTestingOptions();
-        //     updateDoctorResponse("Based on your symptoms, genetic testing is highly recommended at this time.", 'history');
-        //     addTestResult();
-        // } else {
-        //     updateDoctorResponse("Based on your symptoms, genetic testing is not recommended at this time.", 'history');
-        //     addTestResult();
-        // }
-        // document.getElementById('testsSection').style.display = 'block';
-        // updateSteps(2);
         updateDoctorResponse("请去检验科室做进一步检查", 'history');
-        // addTestResult();
 
     } catch (error) {
         updateDoctorResponse('I apologize, but I encountered an error analyzing your symptoms. Please try again.', 'symptoms');
@@ -111,23 +90,6 @@ async function analyzeSymptoms() {
 function formatDoctorResponse(analysis) {
     return analysis.replace(/\d\./g, '<br>•').replace(/\n/g, ' ');
 }
-
-// function setupGeneticTestingOptions() {
-//     const testResults = document.getElementById('testResults');
-//     testResults.innerHTML = `
-//         <h3>Recommended Genetic Tests:</h3>
-//         <div class="genetic-test-options">
-//             <div class="test-option">
-//                 <input type="checkbox" id="test1" name="genetic-test">
-//                 <label for="test1">Comprehensive Gene Panel</label>
-//             </div>
-//             <div class="test-option">
-//                 <input type="checkbox" id="test2" name="genetic-test">
-//                 <label for="test2">Specific Gene Testing</label>
-//             </div>
-//         </div>
-//     `;
-// }
 
 async function getFinalDiagnosis() {
     const symptoms = document.getElementById('symptoms').value;
@@ -207,7 +169,7 @@ async function getFinalDiagnosis() {
                     <li>治疗方案包括：
                         <ul>
                             <li>口服补充钾剂和镁剂</li>
-                            <li>定期监测电解质水平</li>
+                            <li>定期监测电解质</li>
                             <li>适当补充氯化钠</li>
                         </ul>
                     </li>
@@ -232,19 +194,18 @@ async function getFinalDiagnosis() {
     }
 }
 
-
 async function getFinalDiagnosis_fix() {
     try {
         const discussions = [
             // 第一轮：初步诊断
             {
                 doctor1: `从遗传学角度来看，患者的症状高度符合Gitelman综合征的特征。这是一种常染色体隐性遗传病，主要影响SLC12A3基因。建议进行基因检测确认诊断。`,
-                doctor2: `但我们需要先排除其他可能导致低钾血症的情况。比如，患者是否有长期服用利尿剂或者有严重的腹泻病史？`,
+                doctor2: `但我们需要先排除其他可能导致低钾血症的况。比如，患者是否有长期服用利尿剂或者有严重的腹泻病史？`,
                 doctor3: `从实验室检查来看，患者不仅有低钾血症，还伴有低镁血症和代谢性碱中毒，尿钾排泄增加。这些指标都支持Gitelman综合征的诊断。`
             },
             // 第二轮：深入讨论
             {
-                doctor1: `我同意检验科的意见。患者的实验室指标和临床表现都很典型。特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
+                doctor1: `我同意检验科的意见。患者的实验室指标和临床表现都很特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
                 doctor2: `从肾病科的角度，我们观察到患者的血压偏低，这与肾小管钠离子重吸收障碍相符。但我建议还需要进行醛固酮和肾素活性的检测。`,
                 doctor3: `补充一点，患者的血气分析显示代谢性碱中毒，这与远曲小管功能障碍导致的氯离子重吸收缺陷是一致的。`
             },
@@ -252,7 +213,7 @@ async function getFinalDiagnosis_fix() {
             {
                 doctor1: `考虑到这是一个遗传性疾病，我建议对患者的家族成员也进行筛查。`,
                 doctor2: `治疗方案上，我建议口服补充氯化钾和硫酸镁，同时适当补充氯化钠。需要定期监测电解质水平。`,
-                doctor3: `我建议设定具体的监测指标：血钾维持在3.5-4.0mmol/L，血镁维持在0.7-1.0mmol/L。建议每月监测一次，待稳定后可延长至3个月。`
+                doctor3: `我建议设定具体的监测指标：血钾维在3.5-4.0mmol/L，血镁维持在0.7-1.0mmol/L。建议每月监测一次，待稳定后可延长至3个月。`
             }
         ];
 
@@ -286,7 +247,7 @@ async function getFinalDiagnosis_fix() {
                 <li>需要个性化治疗方案：
                     <ul>
                         <li>补充电解质</li>
-                        <li>联合保钾利尿剂、COX抑制剂、ACEI/ARB规律随访与监测</li>
+                        <li>联合保钾利尿剂、COX抑制剂、ACEI/ARB规随访与监测</li>
                         <li>管理慢性并发症</li>
                     </ul>
                 </li>
@@ -334,7 +295,6 @@ async function showDoctorDiagnosis(doctorId, diagnosis, delay) {
         }, 500); // Duration for chat bubble animation/display
     });
 }
-
 
 function navigateToSection(section) {
     // Get all sections
@@ -393,63 +353,208 @@ document.addEventListener('DOMContentLoaded', function() {
     showAllDoctorImages();
 });
 
-// 模拟加载预训练模型和预测过程
+// Load model and scaler parameters
+async function loadModel() {
+    try {
+        console.log('Starting to load model...');
+        
+        console.log('Fetching scaler params...');
+        const scalerResponse = await fetch('http://localhost:8000/api/scaler-params');
+        if (!scalerResponse.ok) {
+            throw new Error(`Failed to fetch scaler params: ${scalerResponse.status}`);
+        }
+        scalerParams = await scalerResponse.json();
+        console.log('Scaler params loaded:', scalerParams);
+        
+        console.log('Loading ONNX model...');
+        session = await ort.InferenceSession.create('http://localhost:8000/static/model.onnx');
+        console.log('ONNX model loaded successfully');
+        
+    } catch (error) {
+        console.error('Detailed model loading error:', error);
+        throw error;
+    }
+}
+
+// Standardize features using saved scaler parameters
+function standardize(features) {
+    return [
+        features.serum_potassium,
+        features.urine_potassium,
+        features.PH,
+        features.bicarbonate,
+        features.high_blood_pressure
+    ].map((value, index) => {
+        return (value - scalerParams.mean_[index]) / scalerParams.scale_[index];
+    });
+}
+
+// Main prediction function
+async function makePrediction(features) {
+    try {
+        const response = await fetch('http://localhost:8000/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(features)
+        });
+
+        if (!response.ok) {
+            throw new Error('Prediction request failed');
+        }
+
+        const result = await response.json();
+        return result.probability;
+    } catch (error) {
+        console.error('Prediction error:', error);
+        throw error;
+    }
+}
+
+// Define mapping of Chinese names to English variable names
+const nameMapping = {
+    '血钾': 'serum_potassium',
+    '尿钾': 'urine_potassium',
+    '血压': 'high_blood_pressure',
+    'pH值': 'PH',
+    '标准碳酸氢根': 'bicarbonate'
+};
+
 async function loadModelAndPredict() {
     try {
+        // Reset prediction display
+        const probabilityFill = document.querySelector('.probability-fill');
+        const probabilityValue = document.querySelector('.probability-value');
+        const resultInterpretation = document.querySelector('.result-interpretation');
+        
+        probabilityFill.style.width = '0%';
+        probabilityValue.textContent = '0%';
+        resultInterpretation.textContent = '正在分析中...';
+
         showLoading();
         
-        // 模拟模型加载延迟
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Get values from lab test section
+        const testValues = {
+            '血钾': { value: document.querySelector('input[type="text"].test-value').value },
+            '尿钾': { value: document.querySelectorAll('input[type="text"].test-value')[1].value },
+            '高血压': { value: document.querySelectorAll('input[type="text"].test-value')[2].value },
+            'ph值': { value: document.querySelectorAll('input[type="text"].test-value')[3].value },
+            '标准碳酸氢根': { value: document.querySelectorAll('input[type="text"].test-value')[4].value }
+        };
+
+        // Validate if all values are entered
+        for (const [name, data] of Object.entries(testValues)) {
+            if (!data.value) {
+                throw new Error(`请输入${name}的值`);
+            }
+        }
         
-        // 获取输入特征
+        // Get all rows from the feature table
+        const tableRows = document.querySelectorAll('.feature-table tr');
+        
+        // Skip the header row (index 0)
+        for (let i = 1; i < tableRows.length; i++) {
+            const row = tableRows[i];
+            const nameCell = row.cells[0];
+            const valueCell = row.cells[1];
+            const statusSpan = row.querySelector('.status');
+            
+            // Get test name without unit
+            const testName = nameCell.textContent.split(' ')[0];
+            
+            if (testValues[testName]) {
+                // Add delay for visual effect
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Update value
+                valueCell.textContent = testValues[testName].value;
+                
+                // Update status
+                if (statusSpan) {
+                    if (testName === '高血压') {
+                        const isNormal = testValues[testName].value.toLowerCase() === 'no';
+                        statusSpan.textContent = isNormal ? '正常' : '异常';
+                        statusSpan.className = `status ${isNormal ? 'normal' : 'abnormal'}`;
+                    } else {
+                        const value = parseFloat(testValues[testName].value);
+                        const isNormal = (testName === '血钾' && value >= 3.5 && value <= 5.5) ||
+                                       (testName === '尿钾' && value <= 180) ||
+                                       (testName === 'ph值' && value >= 7.35 && value <= 7.45) ||
+                                       (testName === '标准碳酸氢根' && value >= 24 && value <= 28);
+                        
+                        statusSpan.textContent = isNormal ? '正常' : '异常';
+                        statusSpan.className = `status ${isNormal ? 'normal' : 'abnormal'}`;
+                    }
+                }
+            }
+        }
+
+        // Create features object for prediction
         const features = {
-            blood_k: 2.8,
-            urine_k: 200,
-            blood_mg: 0.5,
-            blood_pressure_systolic: 95,
-            blood_pressure_diastolic: 60
+            serum_potassium: parseFloat(testValues['血钾'].value),
+            urine_potassium: parseFloat(testValues['尿钾'].value),
+            high_blood_pressure: testValues['高血压'].value.toLowerCase() === 'yes' ? 1 : 0,
+            PH: parseFloat(testValues['ph值'].value),
+            bicarbonate: parseFloat(testValues['标准碳酸氢根'].value)
         };
         
-        // 模拟模型预测
-        const prediction = predictGitelman(features);
+        // Add delay before making prediction
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // 更新预测结果显示
+        const prediction = await makePrediction(features);
+        
+        // Add delay before showing prediction results
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Update prediction display
         updatePredictionDisplay(prediction);
+        resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(prediction * 100).toFixed(0)}%。建议进行多学科会诊，进一步确认诊断。`;
         
-        hideLoading();
     } catch (error) {
         console.error('预测过程出错:', error);
+        alert('预测失败: ' + error.message);
+    } finally {
         hideLoading();
     }
 }
 
-// 模拟预测函数
-function predictGitelman(features) {
-    // 这里应该是实际的模型预测逻辑
-    // 现在返回一个模拟的预测概率
-    return 0.92;
+// Helper function to determine status
+function getStatus(testName, value) {
+    switch(testName) {
+        case '血钾':
+            return (value < 3.5 || value > 5.5) 
+                ? {text: '异常', class: 'abnormal'} 
+                : {text: '正常', class: 'normal'};
+        case '尿钾':
+            return value > 180 
+                ? {text: '异常', class: 'abnormal'} 
+                : {text: '正常', class: 'normal'};
+        // Add other cases as needed
+        default:
+            return {text: '正常', class: 'normal'};
+    }
 }
 
-// 更新预测结果显示
+// Update prediction display
 function updatePredictionDisplay(probability) {
     const probabilityFill = document.querySelector('.probability-fill');
     const probabilityValue = document.querySelector('.probability-value');
+    const resultInterpretation = document.querySelector('.result-interpretation');
     
     probabilityFill.style.width = `${probability * 100}%`;
     probabilityValue.textContent = `${(probability * 100).toFixed(0)}%`;
-
-    // updateSteps(3);
+    
+    // Update interpretation text with the new probability
+    resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(probability * 100).toFixed(0)}%。
+        建议进行多学科会诊，进一步确认诊断。`;
 }
 
-// 页面加载时自动运行预测
-document.addEventListener('DOMContentLoaded', loadModelAndPredict);
-
+// Chat section display
 function showChatSection() {
-    // 显示聊天部分
     const chatSection = document.getElementById('chatSection');
     chatSection.style.display = 'block';
     
-    // 开始逐条显示消息
     const messages = document.querySelectorAll('.chat-message');
     let currentIndex = 0;
 
@@ -458,37 +563,32 @@ function showChatSection() {
             const message = messages[currentIndex];
             message.classList.remove('hidden');
             
-            // 使用setTimeout来确保transition效果生效
             setTimeout(() => {
                 message.classList.add('show');
             }, 50);
 
             currentIndex++;
             
-            // 设置下一条消息的显示时间（根据消息长度调整
             const messageLength = message.querySelector('.message-content').textContent.length;
-            const delay = Math.max(1000, messageLength * 30); // 最少1.5秒，或更长
+            const delay = Math.max(1000, messageLength * 30);
             
             setTimeout(showNextMessage, delay);
         } else {
-            // 所有消息显示完后，显示AI预测部分
-            setTimeout(() => {
-                document.getElementById('predictionSection').style.display = 'block';
-                loadModelAndPredict();
-            }, 1000);
+            // setTimeout(() => {
+            //     document.getElementById('predictionSection').style.display = 'block';
+            //     loadModelAndPredict();
+            // }, 1000);
         }
     }
 
     showNextMessage();
 }
 
+// AI prompt display
 function showAIPrompt() {
-    // 隐藏其他部分
-    // 显示提示词部分
     const promptSection = document.getElementById('promptSection');
     promptSection.style.display = 'block';
     
-    // 可以添加动画效果
     const nodes = promptSection.querySelectorAll('.tree-node');
     nodes.forEach((node, index) => {
         setTimeout(() => {
@@ -496,3 +596,6 @@ function showAIPrompt() {
         }, index * 300);
     });
 }
+
+// // Initialize on page load
+// document.addEventListener('DOMContentLoaded', loadModelAndPredict);

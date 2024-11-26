@@ -7,6 +7,13 @@ import openai
 from openai import OpenAI
 import os
 from datetime import datetime
+import onnxruntime as rt
+import json
+import numpy as np
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse, FileResponse
+from pathlib import Path
+
 
 app = FastAPI()
 
@@ -28,18 +35,95 @@ client = OpenAI(
 
 # openai.api_key = "sk-FO3yus4aQ3OLusojMZXp26LXHiTZFv6pnPDNtDT70pTIeeAG"
 
+@app.get("/")
+async def root():
+    return {"message": "Medical Diagnosis API is running"}
+
+
+class PredictionRequest(BaseModel):
+    serum_potassium: float
+    urine_potassium: float
+    PH: float
+    bicarbonate: float
+    high_blood_pressure: int
+
+
+# Create and mount static directory
+static_dir = Path("static")
+static_dir.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Load model and scaler parameters
+try:
+    # Load the ONNX model
+    model_path = static_dir / "model.onnx"
+    ort_session = rt.InferenceSession(str(model_path))
+    
+    # Load scaler parameters
+    scaler_path = static_dir / "scaler_params.json"
+    with open(scaler_path, 'r') as f:
+        scaler_params = json.load(f)
+    
+    # Print model info for debugging
+    print("Model input name:", ort_session.get_inputs()[0].name)
+    print("Model input shape:", ort_session.get_inputs()[0].shape)
+    print("Model output name:", ort_session.get_outputs()[0].name)
+    print("Model output shape:", ort_session.get_outputs()[0].shape)
+    
+    print("Model and scaler loaded successfully")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    raise
+
+@app.post("/predict")
+async def predict(request: PredictionRequest):
+    try:
+        # Convert input features to array
+        features = np.array([
+            request.serum_potassium,
+            request.urine_potassium,
+            request.PH,
+            request.bicarbonate,
+            request.high_blood_pressure
+        ])
+
+        # Standardize features
+        features_scaled = (features - np.array(scaler_params['mean_'])) / np.array(scaler_params['scale_'])
+        
+        # Reshape for model input (ensure it's 2D array)
+        features_scaled = features_scaled.reshape(1, -1).astype(np.float32)
+
+        # Make prediction
+        input_name = ort_session.get_inputs()[0].name
+        prediction = ort_session.run(None, {input_name: features_scaled})
+        
+        # Get probability (assuming binary classification)
+        probability = float(prediction[0][0])  # Adjust index based on your model output
+
+        return {"probability": probability}
+
+    except Exception as e:
+        print(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/scaler-params")
+async def get_scaler_params():
+    try:
+        scaler_path = static_dir / "scaler_params.json"
+        if not scaler_path.exists():
+            raise HTTPException(status_code=404, detail="Scaler parameters file not found")
+        with open(scaler_path, 'r') as f:
+            return JSONResponse(content=json.load(f))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 class DiagnosisRequest(BaseModel):
     symptoms: str
     test_results: Optional[Dict[str, str]] = None
     patient_history: Optional[str] = None
 
-
-@app.get("/")
-async def root():
-    return {"message": "Medical Diagnosis API is running"}
-
-
+    
 @app.post("/analyze-symptoms")
 async def analyze_symptoms(request: DiagnosisRequest):
     # if not openai.api_key:
@@ -222,5 +306,4 @@ async def get_treatment_opinion(request: DiagnosisRequest):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)

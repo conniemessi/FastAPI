@@ -130,7 +130,7 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>测试名称（例如血钾，尿钾，血镁，血压）</th>
+                                    <th>测试名称（例如血钾，尿钾，血压）</th>
                                     <th>检验结果</th>
                                     <th>单位（例如，mmol/L）</th>
                                 </tr>
@@ -147,14 +147,19 @@
                                     <td class="test-unit">mEq/24h</td>
                                 </tr>
                                 <tr class="test-result-item">
-                                    <td class="test-name">血镁</td>
+                                    <td class="test-name">是否有高血压(yes/no)</td>
                                     <td><input type="text" class="test-value" placeholder="R"></td>
-                                    <td class="test-unit">mg/dL</td>
+                                    <td class="test-unit"></td>
                                 </tr>
                                 <tr class="test-result-item">
-                                    <td class="test-name">血压</td>
+                                    <td class="test-name">pH值</td>
                                     <td><input type="text" class="test-value" placeholder="R"></td>
-                                    <td class="test-unit">mmHg</td>
+                                    <td class="test-unit"></td>
+                                </tr>
+                                <tr class="test-result-item">
+                                    <td class="test-name">标准碳酸氢根</td>
+                                    <td><input type="text" class="test-value" placeholder="R"></td>
+                                    <td class="test-unit"></td>
                                 </tr>
                                 <!-- 其他测试项目 -->
                             </tbody>
@@ -167,7 +172,7 @@
             </div>
 
             <div class="lab-actions">
-                <button class="fancy-button" onclick="navigateToSection('prediction')">
+                <button class="fancy-button" onclick="loadModelAndPredict()">
                     先请AI助手自动分析化验结果，后请医生分析化验结果
                 </button>
             </div>
@@ -203,23 +208,28 @@
                             </tr>
                             <tr>
                                 <td>血钾 (mmol/L)</td>
-                                <td>2.8</td>
-                                <td><span class="status abnormal">异常</span></td>
+                                <td>0</td>
+                                <td><span class="status normal">待测</span></td>
                             </tr>
                             <tr>
                                 <td>尿钾 (mEq/24h)</td>
-                                <td>200</td>
-                                <td><span class="status abnormal">异常</span></td>
+                                <td>0</td>
+                                <td><span class="status normal">待测</span></td>
                             </tr>
                             <tr>
-                                <td>血镁 (mg/dL)</td>
-                                <td>0.5</td>
-                                <td><span class="status abnormal">异常</span></td>
+                                <td>高血压</td>
+                                <td>no</td>
+                                <td><span class="status normal">待测</span></td>
                             </tr>
                             <tr>
-                                <td>血压 (mmHg)</td>
-                                <td>95/60</td>
-                                <td><span class="status normal">正常</span></td>
+                                <td>ph值</td>
+                                <td>0</td>
+                                <td><span class="status normal">待测</span></td>
+                            </tr>
+                            <tr>
+                                <td>标准碳酸氢根</td>
+                                <td>0</td>
+                                <td><span class="status normal">待测</span></td>
                             </tr>
                         </table>
                     </div>
@@ -230,13 +240,12 @@
                         <div class="result-card">
                             <div class="probability-display">
                                 <div class="probability-bar">
-                                    <div class="probability-fill" style="width: 92%;"></div>
+                                    <div class="probability-fill" style="width: 0%;"></div>
                                 </div>
-                                <div class="probability-value">92%</div>
+                                <div class="probability-value">0%</div>
                             </div>
                             <p class="result-interpretation">
-                                基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 92%。
-                                建议进行多学科会诊，进一步确认诊断。
+                                等待分析...
                             </p>
                         </div>
                     </div>
@@ -575,7 +584,7 @@ AI_Host:
             智能模型正在处理...请稍候...
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
