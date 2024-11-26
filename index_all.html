@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Diagnosis System</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #FFC107;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --background-color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: var(--background-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        textarea, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #1976D2;
+        }
+
+        .result-box {
+            background-color: #E3F2FD;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        .test-result-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .test-result-item input {
+            margin-left: 10px;
+            flex: 1;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #ddd;
+            margin: 0 5px;
+            border-radius: 4px;
+        }
+
+        .step.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel full-width">
+            <h1>Medical Diagnosis System</h1>
+            <div class="step-indicator">
+                <div class="step active" id="step1">Symptoms</div>
+                <div class="step" id="step2">Lab Tests</div>
+                <div class="step" id="step3">Final Diagnosis</div>
+            </div>
+        </div>
+
+        <!-- Symptoms Section -->
+        <div class="panel full-width" id="symptomsSection">
+            <h2>Patient Symptoms</h2>
+            <div class="input-group">
+                <label for="symptoms">Describe your symptoms in detail:</label>
+                <textarea id="symptoms" placeholder="Enter your symptoms..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="patientHistory">Medical History (optional):</label>
+                <textarea id="patientHistory" placeholder="Enter any relevant medical history..."></textarea>
+            </div>
+            <button onclick="analyzeSymptoms()">Analyze Symptoms</button>
+            <div id="symptomsAnalysis" class="result-box" style="display: none;"></div>
+        </div>
+
+        <!-- Lab Tests Section -->
+        <div class="panel full-width" id="testsSection" style="display: none;">
+            <h2>Laboratory Test Results</h2>
+            <div id="testResults">
+                <!-- Test results will be added here dynamically -->
+            </div>
+            <button onclick="addTestResult()">Add Test Result</button>
+            <button onclick="getFinalDiagnosis()">Get Diagnosis</button>
+        </div>
+
+        <!-- Final Diagnosis Section -->
+        <div class="panel full-width" id="diagnosisSection" style="display: none;">
+            <h2>Final Diagnosis</h2>
+            <div id="finalDiagnosis" class="result-box"></div>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            Processing... Please wait...
+        </div>
+    </div>
+
+    <script>
+        let currentTestId = 1;
+
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        function updateSteps(stepNumber) {
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.toggle('active', index < stepNumber);
+            });
+        }
+
+        function addTestResult() {
+            const testResults = document.getElementById('testResults');
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-result-item';
+            testDiv.innerHTML = `
+                <input type="text" placeholder="Test name" class="test-name">
+                <input type="text" placeholder="Result" class="test-value">
+            `;
+            testResults.appendChild(testDiv);
+        }
+
+        async function analyzeSymptoms() {
+            const symptoms = document.getElementById('symptoms').value;
+            const patientHistory = document.getElementById('patientHistory').value;
+
+            if (!symptoms) {
+                alert('Please describe the symptoms first.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('http://localhost:8000/analyze-symptoms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ symptoms, patient_history: patientHistory })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('symptomsAnalysis').textContent = data.analysis;
+                document.getElementById('symptomsAnalysis').style.display = 'block';
+                document.getElementById('testsSection').style.display = 'block';
+
+                updateSteps(2);
+                addTestResult(); // Add first test result field
+            } catch (error) {
+                alert('Error analyzing symptoms: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function getFinalDiagnosis() {
+            const symptoms = document.getElementById('symptoms').value;
+            const patientHistory = document.getElementById('patientHistory').value;
+
+            // Collect test results
+            const testResults = {};
+            document.querySelectorAll('.test-result-item').forEach(item => {
+                const testName = item.querySelector('.test-name').value;
+                const testValue = item.querySelector('.test-value').value;
+                if (testName && testValue) {
+                    testResults[testName] = testValue;
+                }
+            });
+
+            showLoading();
+
+            try {
+                const response = await fetch('http://localhost:8000/final-diagnosis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        symptoms,
+                        patient_history: patientHistory,
+                        test_results: testResults
+                    })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('diagnosisSection').style.display = 'block';
+                document.getElementById('finalDiagnosis').textContent = data.diagnosis;
+
+                updateSteps(3);
+            } catch (error) {
+                alert('Error getting diagnosis: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function analyzeSymptoms() {
+    const symptoms = document.getElementById('symptoms').value;
+    const patientHistory = document.getElementById('patientHistory').value;
+
+    if (!symptoms) {
+        alert('Please describe the symptoms first.');
+        return;
+    }
+
+    showLoading();
+
+    try {
+        const response = await fetch('http://localhost:8000/analyze-symptoms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                symptoms,
+                patient_history: patientHistory
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Error analyzing symptoms');
+        }
+
+        const data = await response.json();
+
+        document.getElementById('symptomsAnalysis').textContent = data.analysis;
+        document.getElementById('symptomsAnalysis').style.display = 'block';
+        document.getElementById('testsSection').style.display = 'block';
+
+        updateSteps(2);
+        addTestResult();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+async function getFinalDiagnosis() {
+    const symptoms = document.getElementById('symptoms').value;
+    const patientHistory = document.getElementById('patientHistory').value;
+
+    const testResults = {};
+    document.querySelectorAll('.test-result-item').forEach(item => {
+        const testName = item.querySelector('.test-name').value;
+        const testValue = item.querySelector('.test-value').value;
+        if (testName && testValue) {
+            testResults[testName] = testValue;
+        }
+    });
+
+    showLoading();
+
+    try {
+        const response = await fetch('http://localhost:8000/final-diagnosis', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                symptoms,
+                patient_history: patientHistory,
+                test_results: testResults
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Error getting diagnosis');
+        }
+
+        const data = await response.json();
+
+        document.getElementById('diagnosisSection').style.display = 'block';
+        document.getElementById('finalDiagnosis').textContent = data.diagnosis;
+
+        updateSteps(3);
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    } finally {
+        hideLoading();
+    }
+}
+
+    </script>
+</body>
+</html>
+

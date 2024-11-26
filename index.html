@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Diagnosis System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="panel full-width">
+            <h1>多学科全流程会诊系统</h1>
+            <div class="step-indicator">
+                <div class="step active" id="step1" onclick="navigateToSection('symptoms')">门诊（初步诊断）</div>
+                <div class="step active" id="step2" onclick="navigateToSection('tests')">检验科室</div>
+                <div class="step active" id="step3" onclick="navigateToSection('prediction')">AI小模型自动分析化验结果</div>
+                <div class="step active" id="step4" onclick="navigateToSection('diagnosis')">AI大模型多学科会诊</div>
+            </div>
+        </div>
+
+        <!-- Preliminary Consultation Section -->
+        <div class="panel full-width">
+            <h2>门诊 (初步诊断)</h2>
+            
+            <div class="preliminary-consultation">
+                <div class="conversations-row">
+                    <!-- First conversation about symptoms -->
+                    <div class="characters-container" id="symptomsSection">
+                        <div class="doctor-character">
+                            <div class="character-image">
+                                <img src="images/doctor1.png" alt="Doctor">
+                            </div>
+                            <div class="speech-bubble doctor-bubble" id="symptomsAnalysis">
+                                <p>您好！我是 AI 医生。请问您的基本情况及症状？</p>
+                                <!-- <ul class="patient-info-checklist">
+                                    <li>您的年龄是多少？</li>
+                                    <li>这些症状大约是什么时候开始出现的？</li>
+                                    <li>您平时的血压情况如何？</li>
+                                </ul>
+
+                                <p>另外，请告诉我您是否有以下症状：</p>
+                                <ul class="symptoms-checklist">
+                                    <li>是否经常感到肌肉无力和疲劳？尤其是在运动后？</li>
+                                    <li>是否出现过肌肉痉挛？如果有，多久发生一次？</li>
+                                    <li>是否特别喜欢吃咸的食物？</li>
+                                    <li>是否有头晕的情况？是否会突然发作？</li>
+                                    <li>是否观察到手脚或面部有浮肿现象？</li>
+                                    <li>是否出现过手脚抽搐、麻木的症状？</li>
+                                </ul> -->
+
+                            </div>
+                        </div>
+
+                        <div class="patient-character">
+                            <div class="character-image">
+                                <img src="images/patient.png" alt="Patient">
+                            </div>
+                            <div class="speech-bubble patient-bubble">
+                                <textarea id="symptoms" placeholder="请告诉医生您的症状......"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second conversation about medical history -->
+                    <div class="characters-container" id="historySection">
+                        <div class="doctor-character">
+                            <div class="character-image">
+                                <img src="images/doctor1.png" alt="Doctor">
+                            </div>
+                            <div class="speech-bubble doctor-bubble">
+                                <p>您能否告知任何相关病史？包括既往病史、用药史或家族病史。</p>
+                                <!-- <ul class="patient-info-checklist">
+                                    <li>是否有使用过利尿剂？</li>
+                                    <li>是否有持续性呕吐或腹泻？</li>
+                                    <li>家族中是否有类似症状的人？特别是直系亲属？</li>
+                                    <li>以前是否有其他疾病史？</li>
+                                </ul> -->
+                            </div>
+                        </div>
+
+                        <div class="patient-character">
+                            <div class="character-image">
+                                <img src="images/patient.png" alt="Patient">
+                            </div>
+                            <div class="speech-bubble patient-bubble">
+                                <textarea id="patientHistory" placeholder="请告诉医生您的病史..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consult Button -->
+                <div class="consult-button-container">
+                    <button class="fancy-button" onclick="analyzeSymptoms()">咨询医生，进行初步诊断</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lab Tests Section -->
+        <div class="panel full-width" id="testsSection">
+            <h2 class="section-title">检验科室</h2>
+            
+            <div class="lab-room-container">
+                <!-- 左侧护士 -->
+                <div class="nurse-section">
+                    <div class="character-image">
+                        <img src="images/nurse.png" alt="Nurse">
+                    </div>
+                    <div class="nurse-info">
+                        <div class="nurse-name">张护士</div>
+                        <div class="nurse-message">我会帮您记录您的测试结果。</div>
+                    </div>
+                </div>
+
+                <!-- 右侧检验结果表格 -->
+                <div class="test-results-section">
+                    <div class="character-image">
+                        <img src="images/patient.png" alt="Lab">
+                    </div>
+                    <div class="test-results-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>测试名称（例如血钾，尿钾，血镁，血压）</th>
+                                    <th>检验结果</th>
+                                    <th>单位（例如，mmol/L）</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="test-result-item">
+                                    <td class="test-name">血钾</td>
+                                    <td><input type="text" class="test-value" placeholder="R"></td>
+                                    <td class="test-unit">mmol/L</td>
+                                </tr>
+                                <tr class="test-result-item">
+                                    <td class="test-name">尿钾</td>
+                                    <td><input type="text" class="test-value" placeholder="R"></td>
+                                    <td class="test-unit">mEq/24h</td>
+                                </tr>
+                                <tr class="test-result-item">
+                                    <td class="test-name">血镁</td>
+                                    <td><input type="text" class="test-value" placeholder="R"></td>
+                                    <td class="test-unit">mg/dL</td>
+                                </tr>
+                                <tr class="test-result-item">
+                                    <td class="test-name">血压</td>
+                                    <td><input type="text" class="test-value" placeholder="R"></td>
+                                    <td class="test-unit">mmHg</td>
+                                </tr>
+                                <!-- 其他测试项目 -->
+                            </tbody>
+                        </table>
+                        <div class="add-test-button">
+                            <button class="add-test-btn" onclick="addTestResult()">+ 添加测试结果</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lab-actions">
+                <button class="fancy-button" onclick="navigateToSection('prediction')">
+                    先请AI助手自动分析化验结果，后请医生分析化验结果
+                </button>
+            </div>
+        </div>
+
+
+        <div class="panel full-width" id="predictionSection">
+            <h2>AI 辅助诊断</h2>
+            
+            <div class="prediction-container">
+                <!-- AI医生角色 -->
+                <div class="ai-doctor">
+                    <div class="avatar-container">
+                        <div class="avatar">
+                            <img src="images/ml.png" alt="AI Doctor">
+                        </div>
+                        <div class="avatar-title">AI 诊断助手</div>
+                    </div>
+                    <div class="speech-bubble ai-bubble">
+                        根据患者的检验结果，AI诊断助手（AI小模型）将进行 Gitelman 综合征的概率预测。
+                    </div>
+                </div>
+        
+                <!-- 预测过程展示 -->
+                <div class="prediction-process">
+                    <div class="input-features">
+                        <h3>输入特征</h3>
+                        <table class="feature-table">
+                            <tr>
+                                <th>特征名称</th>
+                                <th>数值</th>
+                                <th>状态</th>
+                            </tr>
+                            <tr>
+                                <td>血钾 (mmol/L)</td>
+                                <td>2.8</td>
+                                <td><span class="status abnormal">异常</span></td>
+                            </tr>
+                            <tr>
+                                <td>尿钾 (mEq/24h)</td>
+                                <td>200</td>
+                                <td><span class="status abnormal">异常</span></td>
+                            </tr>
+                            <tr>
+                                <td>血镁 (mg/dL)</td>
+                                <td>0.5</td>
+                                <td><span class="status abnormal">异常</span></td>
+                            </tr>
+                            <tr>
+                                <td>血压 (mmHg)</td>
+                                <td>95/60</td>
+                                <td><span class="status normal">正常</span></td>
+                            </tr>
+                        </table>
+                    </div>
+        
+                    <!-- 预测结果 -->
+                    <div class="prediction-result">
+                        <h3>预测结果</h3>
+                        <div class="result-card">
+                            <div class="probability-display">
+                                <div class="probability-bar">
+                                    <div class="probability-fill" style="width: 92%;"></div>
+                                </div>
+                                <div class="probability-value">92%</div>
+                            </div>
+                            <p class="result-interpretation">
+                                基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 92%。
+                                建议进行多学科会诊，进一步确认诊断。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="chat-actions">
+                <button class="fancy-button" onclick="showChatSection()">
+                    请医生分析化验结果
+                </button>
+            </div>
+        </div>
+
+        <div class="panel full-width" id="chatSection">
+            <h2>化验结果分析</h2>
+            
+            <div class="chat-container">
+                <!-- 血钾结果询问 -->
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        我们来看一下您的化验结果。您的血钾水平是2.8 mmol/L，明显低于正常范围（3.5-5.5 mmol/L）。您平时是否经常感觉到手脚无力？
+                    </div>
+                </div>
+
+                <div class="chat-message patient-message hidden">
+                    <div class="avatar">
+                        <img src="images/patient.png" alt="Patient">
+                    </div>
+                    <div class="message-content">
+                        是的，特别是爬楼梯的时候，感觉腿特别无力。
+                    </div>
+                </div>
+
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        您的血气分析显示：pH 7.45，碳酸氢根 30 mmol/L，这表明您存在代谢性碱中毒。这种情况会让您感觉到头晕或者心悸吗？
+                    </div>
+                </div>
+        
+                <div class="chat-message patient-message hidden">
+                    <div class="avatar">
+                        <img src="images/patient.png" alt="Patient">
+                    </div>
+                    <div class="message-content">
+                        对，我有时候确实会感觉头晕，特别是突然站起来的时候。
+                    </div>
+                </div>
+        
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor2.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        这种代谢性碱中毒与您的低钾血症是相关的。在Gitelman综合征中，肾小管的问题会导致氯离子重吸收减少，同时伴随着碳酸氢根的代偿性增加。
+                    </div>
+                </div>
+
+                <!-- 尿钾询问 -->
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        您的24小时尿钾排出量超过200 mmol/天，这说明您的肾脏在不当地丢失钾离子。同时我注意到您的尿钙很低，这是一个重要的诊断线索。
+                    </div>
+                </div>
+
+                <!-- 血镁询问 -->
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        您的血镁也偏低，是0.5 mmol/L（正常范围0.7-1.0 mmol/L）。您是否经常出现手脚抽筋的情况？
+                    </div>
+                </div>
+
+                <div class="chat-message patient-message hidden">
+                    <div class="avatar">
+                        <img src="images/patient.png" alt="Patient">
+                    </div>
+                    <div class="message-content">
+                        对，尤其是晚上睡觉的时候，经常腿抽筋，很疼。
+                    </div>
+                </div>
+
+                <!-- 血确认 -->
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        我看到您的血压是95/60 mmHg，属于正常偏低。这与您的电解质异常是相符的。
+                    </div>
+                </div>
+
+                <!-- 会诊建议 -->
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor2.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        根据您的症状和化验结果：低血钾、低血镁、尿钾丢失增多、尿钙减少，以及正常偏低的血压，这些都非常符合Gitelman综合征的特点。建议我们进行多学科会诊，进一步确认诊断并制定治疗方案。
+                    </div>
+                </div>
+
+                <div class="chat-message patient-message hidden">
+                    <div class="avatar">
+                        <img src="images/patient.png" alt="Patient">
+                    </div>
+                    <div class="message-content">
+                        好的，医生。那下一步我需要做什么？
+                    </div>
+                </div>
+
+                <div class="chat-message doctor-message hidden">
+                    <div class="avatar">
+                        <img src="images/doctor1.png" alt="Doctor">
+                    </div>
+                    <div class="message-content">
+                        我建议进行基因检测以明确诊断，同时我们先开具一些补充钾剂和镁剂来缓解您的症状。请您稍等，我这就为您安排多学科会诊。
+                    </div>
+                </div>
+            </div>
+
+        <!-- Submit Results Button -->
+        <div class="chat-actions">
+            <button class="fancy-button" onclick="getFinalDiagnosis_fix()">
+                进行多学科会诊
+            </button>
+        </div>
+    </div>
+        
+    
+        <!-- Final Diagnosis Section -->
+        <div class="panel full-width" id="diagnosisSection">
+            <h2>多学科会诊室（最终诊断）</h2>
+            
+            <div class="consultation-room">
+                <!-- Top Doctor -->
+                <div class="doctor-position top">
+                    <div class="doctor-character">
+                        <div class="character-image">
+                            <img src="images/doctor1.png" alt="Doctor 1">
+                        </div>
+                        <div class="speech-bubble doctor-bubble" id="finalDiagnosis1">
+                            <p class="doctor-name">刘医生（遗传专家，AI大模型）</p>
+                            <div class="diagnosis-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Left Doctor -->
+                <div class="doctor-position left">
+                    <div class="doctor-character">
+                        <div class="character-image">
+                            <img src="images/doctor2.png" alt="Doctor 2">
+                        </div>
+                        <div class="speech-bubble doctor-bubble" id="finalDiagnosis2">
+                            <p class="doctor-name">赵医生（肾病专家，AI大模型）</p>
+                            <div class="diagnosis-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Doctor -->
+                <div class="doctor-position right">
+                    <div class="doctor-character">
+                        <div class="character-image">
+                            <img src="images/doctor3.png" alt="Doctor 3">
+                        </div>
+                        <div class="speech-bubble doctor-bubble" id="finalDiagnosis3">
+                            <p class="doctor-name">陈医生（检验专家，AI大模型）</p>
+                            <div class="diagnosis-content"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Central Table -->
+                <div class="consultation-table">
+                    <img src="images/table.png" alt="Consultation Table" class="table-image">
+                </div>
+
+                <!-- 添加 AI 主持医生 -->
+                <div class="doctor-position bottom">
+                    <div class="doctor-character">
+                        <div class="character-image">
+                            <img src="images/ai_host.png" alt="AI Host">
+                        </div>
+                        <div class="speech-bubble doctor-bubble" id="aiHostSummary">
+                            <p class="doctor-name">王教授（AI主持医生）</p>
+                            <div class="diagnosis-content">
+                                <!-- AI主持医生的总结将在这里动态插入 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient -->
+                <!-- <div class="character-image patient-image">
+                    <img src="images/patient.png" alt="Patient">
+                </div> -->
+                <!-- <div id="patientResponse" class="patient-response hidden">
+                    <div class="patient-bubble">
+                        <div class="character-image patient-image">
+                            <img src="images/patient.png" alt="Patient">
+                        </div>
+                        <div class="message-content">
+                            感谢医生的诊断。
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+
+            <div class="final-actions">
+                <button class="fancy-button" onclick="showAIPrompt()">
+                    展示AI大模型决策prompt
+                </button>
+            </div>
+        </div>
+        
+        <!-- 添加新的提示词展示部分 -->
+<div class="panel full-width" id="promptSection" style="display: none;">
+    <h2>AI大模型决策过程</h2>
+    
+    <div class="prompt-container">
+        <div class="tree-prompt">
+            <h3>多学科会诊决策树</h3>
+            <div class="tree-node root">
+                <div class="node-content">
+                    <h4>输入信息整合</h4>
+                    <ul>
+                        <li>患者症状描述</li>
+                        <li>实验室检查结果</li>
+                        <li>AI小模型预测结果</li>
+                    </ul>
+                </div>
+                
+                <div class="tree-branches">
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <h4>遗传专家视角</h4>
+                            <ul>
+                                <li>基因突变分析</li>
+                                <li>遗传模式判断</li>
+                                <li>家族史解读</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <h4>肾病专家视角</h4>
+                            <ul>
+                                <li>电解质代谢分析</li>
+                                <li>肾小管功能评估</li>
+                                <li>治疗方案建议</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <h4>检验专家视角</h4>
+                            <ul>
+                                <li>实验室数据解读</li>
+                                <li>检验指标关联性分析</li>
+                                <li>后续检查建议</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tree-conclusion">
+                    <div class="node-content">
+                        <h4>AI主持医生总结</h4>
+                        <ul>
+                            <li>综合诊断结论</li>
+                            <li>治疗方案整合</li>
+                            <li>随访计划制定</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="prompt-details">
+            <h3>详细提示词结构</h3>
+            <pre><code>
+System: 你是一个多学科会诊系统，由三位专家和一位主持医生组成。
+专家们需要基于以下信息进行分析：
+1. 患者症状: {symptoms}
+2. 实验室检查: {lab_results}
+3. AI预测结果: {ai_prediction}
+
+Expert_1 (遗传专家):
+- 分析可能的遗传性疾病
+- 评估基因检测必要性
+- 提供遗传咨询建议
+
+Expert_2 (肾病专家):
+- 解读电解质异常
+- 评估肾功能状况
+- 制定治疗方案
+
+Expert_3 (检验专家):
+- 详细解读化验结果
+- 建议补充检查项目
+- 评估疾病进展
+
+AI_Host:
+- 整合专家意见
+- 形成统一诊断
+- 制定治疗计划
+- 安排随访方案
+            </code></pre>
+        </div>
+    </div>
+</div>
+
+        <div class="loading" id="loadingIndicator">
+            智能模型正在处理...请稍候...
+        </div>
+    </div>
+
+
+
+    <script src="script.js"></script>
+</body>
+</html>
