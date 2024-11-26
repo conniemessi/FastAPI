@@ -7,9 +7,13 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
     <div class="container">
         <div class="panel full-width">
-            <h1>多学科全流程会诊系统</h1>
+            <h1>
+                <span>多学科全流程会诊系统</span>
+                <div class="title-subtitle">Multidisciplinary Consultation System</div>
+            </h1>
             <div class="step-indicator">
                 <div class="step active" id="step1" onclick="navigateToSection('symptoms')">门诊（初步诊断）</div>
                 <div class="step active" id="step2" onclick="navigateToSection('tests')">检验科室</div>
@@ -20,7 +24,12 @@
 
         <!-- Preliminary Consultation Section -->
         <div class="panel full-width">
-            <h2>门诊 (初步诊断)</h2>
+            <div class="room-number">Room 101</div>
+            <h2 class="symptoms">门诊 (初步诊断)</h2>
+            <div class="doctor-info">
+                <span class="status-indicator status-active"></span>
+                出诊医生：刘医生（AI大模型）
+            </div>
             
             <div class="preliminary-consultation">
                 <div class="conversations-row">
@@ -98,8 +107,8 @@
 
         <!-- Lab Tests Section -->
         <div class="panel full-width" id="testsSection">
-            <h2 class="section-title">检验科室</h2>
-            
+            <h2 class="tests">检验科室</h2>
+            <div class="room-number">Room 301</div>
             <div class="lab-room-container">
                 <!-- 左侧护士 -->
                 <div class="nurse-section">
@@ -166,8 +175,8 @@
 
 
         <div class="panel full-width" id="predictionSection">
-            <h2>AI 辅助诊断</h2>
-            
+            <h2 class="prediction">AI 辅助诊断</h2>
+            <div class="room-number">Computer Lab</div>
             <div class="prediction-container">
                 <!-- AI医生角色 -->
                 <div class="ai-doctor">
@@ -243,7 +252,11 @@
 
         <div class="panel full-width" id="chatSection">
             <h2>化验结果分析</h2>
-            
+            <div class="room-number">Room 101</div>
+            <div class="doctor-info">
+                <span class="status-indicator status-active"></span>
+                出诊医生：刘医生（AI大模型）
+            </div>
             <div class="chat-container">
                 <!-- 血钾结果询问 -->
                 <div class="chat-message doctor-message hidden">
@@ -370,8 +383,12 @@
     
         <!-- Final Diagnosis Section -->
         <div class="panel full-width" id="diagnosisSection">
-            <h2>多学科会诊室（最终诊断）</h2>
-            
+            <h2 class="diagnosis">多学科会诊室（最终诊断）</h2>
+            <div class="room-number">Room 201</div>
+            <div class="doctor-info">
+                <span class="status-indicator status-active"></span>
+                出诊医生：刘医生，赵医生，陈医生（AI大模型） 王教授（AI主持人）
+            </div>
             <div class="consultation-room">
                 <!-- Top Doctor -->
                 <div class="doctor-position top">
@@ -558,8 +575,6 @@ AI_Host:
             智能模型正在处理...请稍候...
         </div>
     </div>
-
-
 
     <script src="script.js"></script>
 </body>

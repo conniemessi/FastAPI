@@ -12,6 +12,7 @@
     padding: 0;
 }
 
+
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
@@ -25,13 +26,23 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+    padding: 2rem;
+    min-height: 100vh;
 }
 
 .panel {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+    backdrop-filter: blur(4px);
+    margin: 1.5rem 0;
+    transition: transform 0.3s ease;
     padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.panel:hover {
+    transform: translateY(-5px);
 }
 
 .full-width {
@@ -114,12 +125,22 @@ button:hover {
     display: none;
     text-align: center;
     padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    border-radius: 15px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
 }
 
 .step-indicator {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
+    margin: 2rem 0;
 }
 
 .step {
@@ -134,10 +155,11 @@ button:hover {
     font-size: 1.2em;
 }
 
-.step:hover {
-    transform: translateY(-2px);
+.step.active {
+    background: linear-gradient(45deg, #2196F3, #4CAF50);
     background-color: var(--primary-color);
     color: white;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
 }
 
 .step.disabled {
@@ -149,11 +171,6 @@ button:hover {
     transform: none;
     background-color: #ddd;
     color: inherit;
-}
-
-.step.active {
-    background-color: var(--primary-color);
-    color: white;
 }
 
 @media (max-width: 1200px) {
@@ -222,17 +239,30 @@ button:hover {
     width: 80%;  /* This makes the image slightly smaller than its container */
     height: 80%; /* This makes the image slightly smaller than its container */
     object-fit: contain; /* Changed from cover to maintain aspect ratio */
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.character-image img:hover {
+    transform: scale(1.1);
 }
 
 .speech-bubble {
-    position: relative;
-    background: white;
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
     border-radius: 20px;
-    padding: 20px;
+    padding: 1.5rem;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
     min-width: 400px; /* Reduced from 300px */
     max-width: 1000px; /* Added max-width for better control */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     font-size: 1.2em; 
+}
+
+.speech-bubble:hover {
+    transform: scale(1.02);
 }
 
 .speech-bubble:before {
@@ -272,13 +302,17 @@ button:hover {
 }
 
 .fancy-button {
-    background: linear-gradient(45deg, var(--primary-color), #64B5F6);
-    padding: 12px 30px;
+    background: linear-gradient(45deg, #2196F3, #4CAF50);
+    border: none;
     border-radius: 25px;
+    color: white;
+    padding: 12px 24px;
     font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
     text-transform: uppercase;
     letter-spacing: 1px;
-    box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
     transition: transform 0.2s, box-shadow 0.2s;
     font-size: 1.4em;
 }
@@ -868,19 +902,25 @@ button:hover {
 
 .test-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
 
 .test-table th,
 .test-table td {
-    padding: 12px;
-    border: 1px solid #e0e0e0;
-    text-align: left;
+    padding: 1rem;
+    background: white;
+    border-bottom: 1px solid #eee;
 }
 
 .test-table th {
-    background-color: #f5f5f5;
+    background: linear-gradient(45deg, #2196F3, #4CAF50);
+    color: white;
     font-weight: 500;
 }
 
@@ -1122,4 +1162,326 @@ button:hover {
 
 .diagnosis-content {
     transition: opacity 0.3s ease-in-out;
+}
+
+/* 8. Medical Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+.status-active {
+    background: #4CAF50;
+}
+
+.status-waiting {
+    background: #FFC107;
+}
+
+/* Enhanced Title Styles */
+.panel h1 {
+    position: relative;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    background: linear-gradient(120deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.panel h1::before {
+    left: 2rem;
+}
+
+.panel h1::after {
+    right: 2rem;
+}
+
+/* Add underline animation */
+.panel h1 span {
+    position: relative;
+    display: inline-block;
+}
+
+.panel h1 span::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #2196F3, #4CAF50);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.panel h1:hover span::after {
+    transform: scaleX(1);
+}
+
+/* Add subtle background pattern */
+.panel h1::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 10% 20%, rgba(216, 241, 230, 0.46) 0%, transparent 46%),
+                radial-gradient(circle at 90% 80%, rgba(33, 150, 243, 0.28) 0%, transparent 56%);
+    opacity: 0.1;
+    border-radius: 15px;
+    z-index: -1;
+}
+
+/* Subtitle Style */
+.title-subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-top: 0.5rem;
+    font-weight: normal;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+/* Add responsive design */
+@media (max-width: 768px) {
+    .panel h1 {
+        font-size: 2rem;
+        padding: 1.5rem 0;
+    }
+    
+    .panel h1::before,
+    .panel h1::after {
+        font-size: 1.4rem;
+    }
+    
+    .title-subtitle {
+        font-size: 0.9rem;
+    }
+}
+
+/* Add hover effect */
+.panel h1:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+/* Add animation for initial load */
+@keyframes titleFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.panel h1 {
+    animation: titleFadeIn 0.8s ease-out forwards;
+}
+
+/* Enhanced H2 Styles */
+.panel h2 {
+    position: relative;
+    font-size: 1.8rem;
+    color: #2c3e50;
+    padding: 1.5rem 2rem;
+    margin: 1rem 0 2rem 0;
+    background: linear-gradient(120deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Left border accent */
+.panel h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 70%;
+    background: linear-gradient(to bottom, #2196F3, #4CAF50);
+    border-radius: 3px;
+}
+
+/* Medical icon - increased size and adjusted positioning */
+.panel h2::after {
+    content: '🏥';
+    font-size: 2rem;  /* Increased from 1.4rem */
+    opacity: 0.8;
+    position: absolute;
+    right: 2.5rem;    /* Adjusted positioning */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s ease;  /* Added transition for hover effect */
+}
+
+/* Different icons for different sections - maintained larger size */
+.panel h2.symptoms::after { 
+    content: '🩺';
+    font-size: 2rem;
+}
+
+.panel h2.tests::after { 
+    content: '🔬';
+    font-size: 2rem;
+}
+
+.panel h2.prediction::after { 
+    content: '🤖';
+    font-size: 2rem;
+}
+
+.panel h2.diagnosis::after { 
+    content: '📋';
+    font-size: 2rem;
+}
+
+/* Optional: Add a subtle hover effect for the icons */
+.panel h2:hover::after {
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Adjust responsive design for larger icons */
+@media (max-width: 768px) {
+    .panel h2::after {
+        font-size: 1.8rem;  /* Slightly smaller on mobile but still larger than before */
+        right: 1.5rem;
+    }
+}
+
+/* Different icons for different sections - maintained larger size */
+.panel h2.symptoms::after { 
+    content: '🩺';
+    font-size: 2rem;
+}
+
+.panel h2.tests::after { 
+    content: '🔬';
+    font-size: 2rem;
+}
+
+.panel h2.prediction::after { 
+    content: '🤖';
+    font-size: 2rem;
+}
+
+.panel h2.diagnosis::after { 
+    content: '📋';
+    font-size: 2rem;
+}
+
+/* Optional: Add a subtle hover effect for the icons */
+.panel h2:hover::after {
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Adjust responsive design for larger icons */
+@media (max-width: 768px) {
+    .panel h2::after {
+        font-size: 1.8rem;  /* Slightly smaller on mobile but still larger than before */
+        right: 1.5rem;
+    }
+}
+
+/* Add animation for section load */
+@keyframes h2SlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.panel h2 {
+    animation: h2SlideIn 0.5s ease-out forwards;
+}
+
+/* Room number styling next to h2 */
+.room-number {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: linear-gradient(45deg, #2196F3, #4CAF50);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
+    z-index: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .panel h2 {
+        font-size: 1.4rem;
+        padding: 1rem 1.5rem;
+    }
+    
+    .panel h2::after {
+        font-size: 1.2rem;
+        right: 1rem;
+    }
+    
+    .room-number {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Enhanced Doctor Info Styles */
+.doctor-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(120deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin: 1rem 0;
+    font-size: 1.3rem;  /* Increased font size */
+    font-weight: 500;   /* Medium weight */
+    color: #2c3e50;
+    transition: all 0.3s ease;
+}
+
+/* Status Indicator Enhancement */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #4CAF50;
+    box-shadow: 0 0 0 rgba(76, 175, 80, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
 }
