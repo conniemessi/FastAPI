@@ -540,7 +540,7 @@ async function loadModelAndPredict() {
         
         // Update prediction display
         updatePredictionDisplay(prediction);
-        resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(prediction * 100).toFixed(0)}%。建议进行多学科会诊，进一步确认诊断。`;
+        // resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(prediction * 100).toFixed(0)}%。建议进行多学科会诊，进一步确认诊断。`;
         
     } catch (error) {
         console.error('预测过程出错:', error);
