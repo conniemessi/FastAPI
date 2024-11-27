@@ -256,7 +256,7 @@ button:hover {
     position: relative;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    min-width: 400px; /* Reduced from 300px */
+    min-width: 400px;
     max-width: 1000px; /* Added max-width for better control */
     font-size: 1.2em; 
 }
@@ -398,7 +398,7 @@ button:hover {
 .doctor-name {
     font-weight: bold;
     color: var(--primary-color);
-    margin-bottom: 8px;
+    margin-bottom: 0px;
     border-bottom: 1px solid rgba(33, 150, 243, 0.2);
     padding-bottom: 4px;
 }
@@ -572,6 +572,7 @@ button:hover {
 .consultation-room {
     position: relative;
     min-height: 1200px;
+    min-height: 1600px;
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
@@ -581,8 +582,8 @@ button:hover {
 /* Table positioning */
 .consultation-table {
     position: absolute;
-    top: 45%;
-    left: 50%;
+    top: 75%;
+    left: 53%;
     transform: translate(-50%, -50%);
     z-index: 1;
 }
@@ -602,20 +603,20 @@ button:hover {
 }
 
 .doctor-position.top {
-    top: 20px;
+    top: 30%;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .doctor-position.left {
-    left: 0;
-    top: 35%;
+    left: 5%;
+    top: 65%;
     transform: translateY(-20%);
 }
 
 .doctor-position.right {
     right: 0;
-    top: 35%;
+    top: 65%;
     transform: translateY(-20%);
 }
 
@@ -1066,19 +1067,19 @@ button:hover {
 
 .doctor-position.bottom {
     position: absolute;
-    bottom: 10px;
-    left: 50%;
+    bottom: 0%;
+    left: 53%;
     transform: translateX(-50%);
     width: 80%;
     margin-top: 20px;
 }
 
-.doctor-position.bottom .doctor-bubble {
+.doctor-position.top .doctor-bubble {
     background-color: #ffffff; /* 特殊的背景色以区分AI主持 */
     border: 2px solid #4a90e2;
 }
 
-.doctor-position.bottom .doctor-name {
+.doctor-position.top .doctor-name {
     color: #4a90e2;
     font-weight: bold;
 }
@@ -1239,7 +1240,7 @@ button:hover {
 
 /* Subtitle Style */
 .title-subtitle {
-    font-size: 1rem;
+    font-size: 1.5rem;
     color: #666;
     margin-top: 0.5rem;
     font-weight: normal;
@@ -1481,4 +1482,86 @@ button:hover {
     100% {
         box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
     }
+}
+
+/* Add specific styling for AI host's speech bubble */
+
+
+/* Adjust the container if needed */
+.doctor-position.top {
+    width: 90%;        /* Increased from default width */
+    margin: 0 auto;    /* Center the container */
+}
+
+/* .introduction-message {
+    margin-bottom: 15px;
+    color: #2c3e50;
+} */
+
+.initial-scene, .host-invitation, .consultation-room {
+    margin: 20px 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.consultation-clock {
+    position: absolute;
+    top: 0%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.consultation-progress {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.progress-step {
+    font-size: 12px;
+    color: #666;
+    padding: 3px 8px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.progress-step.active {
+    background: #2196F3;
+    color: white;
+}
+
+.clock-face {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #605d5d;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    position: relative;
+    margin: 0 auto;
+}
+
+.clock-hand {
+    position: absolute;
+    width: 2px;
+    height: 30px;
+    background: #605d5d;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(0deg);
+    transition: transform 1s ease;
 }

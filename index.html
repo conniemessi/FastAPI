@@ -12,7 +12,7 @@
         <div class="panel full-width">
             <h1>
                 <span>多学科全流程会诊系统</span>
-                <div class="title-subtitle">Multidisciplinary Consultation System</div>
+                <div class="title-subtitle">Gitelman综合症症疗示例</div>
             </h1>
             <div class="step-indicator">
                 <div class="step active" id="step1" onclick="navigateToSection('symptoms')">门诊（初步诊断）</div>
@@ -306,7 +306,7 @@
         
                 <div class="chat-message doctor-message hidden">
                     <div class="avatar">
-                        <img src="images/doctor2.png" alt="Doctor">
+                        <img src="images/doctor1.png" alt="Doctor">
                     </div>
                     <div class="message-content">
                         这种代谢性碱中毒与您的低钾血症是相关的。在Gitelman综合征中，肾小管的问题会导致氯离子重吸收减少，同时伴随着碳酸氢根的代偿性增加。
@@ -355,7 +355,7 @@
                 <!-- 会诊建议 -->
                 <div class="chat-message doctor-message hidden">
                     <div class="avatar">
-                        <img src="images/doctor2.png" alt="Doctor">
+                        <img src="images/doctor1.png" alt="Doctor">
                     </div>
                     <div class="message-content">
                         根据您的症状和化验结果：低血钾、低血镁、尿钾丢失增多、尿钙减少，以及正常偏低的血压，这些都非常符合Gitelman综合征的特点。建议我们进行多学科会诊，进一步确认诊断并制定治疗方案。
@@ -389,18 +389,47 @@
         </div>
     </div>
         
-    
         <!-- Final Diagnosis Section -->
         <div class="panel full-width" id="diagnosisSection">
             <h2 class="diagnosis">多学科会诊室（最终诊断）</h2>
             <div class="room-number">Room 201</div>
-            <div class="doctor-info">
-                <span class="status-indicator status-active"></span>
-                出诊医生：刘医生，赵医生，陈医生（AI大模型） 王教授（AI主持人）
+
+            <!-- Initial Scene with AI Host and Nurse -->
+    <div class="initial-scene">
+        <!-- AI Host Introduction -->
+        <div class="doctor-character">
+            <div class="character-image">
+                <img src="images/ai_host.png" alt="AI Host">
             </div>
-            <div class="consultation-room">
-                <!-- Top Doctor -->
-                <div class="doctor-position top">
+            <div class="speech-bubble doctor-bubble">
+                <p class="doctor-name">王教授（AI主持医生）</p>
+                <p>欢迎来到多学科会诊室。</p>
+            </div>
+        </div>
+
+    </div>
+
+            <div class="consultation-room hidden">
+        <!-- Nurse with Diagnosis Features -->
+        <div class="nurse-character">
+            <div class="character-image">
+                <img src="images/nurse.png" alt="Nurse">
+            </div>
+            <div class="speech-bubble nurse-bubble">
+                <p class="nurse-name">张护士</p>
+                <div class="diagnosis-features">
+                    <h4>患者诊断特征：</h4>
+                    <ul>
+                        <li>血钾：2.8 mmol/L（偏低）</li>
+                        <li>尿钾排出量：> 200 mmol/天（偏高）</li>
+                        <li>血压：95/60 mmHg（正常偏低）</li>
+                        <li>血镁：0.5 mmol/L（偏低）</li>
+                        <li>代谢性碱中毒</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+                <div class="doctor-position bottom">
                     <div class="doctor-character">
                         <div class="character-image">
                             <img src="images/doctor1.png" alt="Doctor 1">
@@ -441,10 +470,22 @@
                 <!-- Central Table -->
                 <div class="consultation-table">
                     <img src="images/table.png" alt="Consultation Table" class="table-image">
+                    <div class="consultation-clock">
+                        <div class="consultation-progress">
+                            <div class="progress-step active">round1</div>
+                            <div class="progress-step">round2</div>
+                            <div class="progress-step">round3</div>
+                            <div class="progress-step">总结</div>
+                        </div>
+                        <div class="clock-face">
+                            <div class="clock-center"></div>
+                            <div class="clock-hand"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 添加 AI 主持医生 -->
-                <div class="doctor-position bottom">
+                <div class="doctor-position top">
                     <div class="doctor-character">
                         <div class="character-image">
                             <img src="images/ai_host.png" alt="AI Host">
@@ -452,26 +493,14 @@
                         <div class="speech-bubble doctor-bubble" id="aiHostSummary">
                             <p class="doctor-name">王教授（AI主持医生）</p>
                             <div class="diagnosis-content">
+                                <p class="introduction-message">
+                                    下面我来主持本次多学科会诊。根据患者情况，邀请遗传专家刘医生，肾病专家赵医生和检验专家陈医生。
+                                </p>
                                 <!-- AI主持医生的总结将在这里动态插入 -->
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Patient -->
-                <!-- <div class="character-image patient-image">
-                    <img src="images/patient.png" alt="Patient">
-                </div> -->
-                <!-- <div id="patientResponse" class="patient-response hidden">
-                    <div class="patient-bubble">
-                        <div class="character-image patient-image">
-                            <img src="images/patient.png" alt="Patient">
-                        </div>
-                        <div class="message-content">
-                            感谢医生的诊断。
-                        </div>
-                    </div>
-                </div> -->
             </div>
 
             <div class="final-actions">

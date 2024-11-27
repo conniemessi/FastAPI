@@ -194,7 +194,39 @@ async function getFinalDiagnosis() {
     }
 }
 
+function startConsultation() {
+    // Show initial scene
+    document.querySelector('.initial-scene').classList.remove('hidden');
+    
+    // After 3 seconds, show host invitation
+    setTimeout(() => {
+        document.querySelector('.host-invitation').classList.remove('hidden');
+    }, 3000);
+
+    // After 6 seconds, show consultation room
+    setTimeout(() => {
+        document.querySelector('.consultation-room').classList.remove('hidden');
+    }, 6000);
+}
+
+// Call this function when entering the diagnosis section
+function showDiagnosisSection() {
+    startConsultation();
+}
+
 async function getFinalDiagnosis_fix() {
+    // Show loading indicator if you have one
+    document.getElementById('loadingIndicator').style.display = 'block';
+    
+    // Show loading indicator if you have one
+    document.getElementById('loadingIndicator').style.display = 'block';
+
+    // Show the diagnosis section
+    document.getElementById('diagnosisSection').style.display = 'block';
+    
+    // Start the sequential consultation display
+    showDiagnosisSection();
+
     try {
         const discussions = [
             // 第一轮：初步诊断
@@ -205,7 +237,7 @@ async function getFinalDiagnosis_fix() {
             },
             // 第二轮：深入讨论
             {
-                doctor1: `我同意检验科的意见。患者的实验室指标和临床表现都很��别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
+                doctor1: `我同意检验科的意见。特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
                 doctor2: `从肾病科的角度，我们观察到患者的血压偏低，这与肾小管钠离子重吸收障碍相符。但我建议还需要进行醛固酮和肾素活性的检测。`,
                 doctor3: `补充一点，患者的血气分析显示代谢性碱中毒，这与远曲小管功能障碍导致的氯离子重吸收缺陷是一致的。`
             },
@@ -220,8 +252,11 @@ async function getFinalDiagnosis_fix() {
         // 逐轮显示讨论内容
         for (let round = 0; round < discussions.length; round++) {
             await new Promise(resolve => setTimeout(resolve, 3000)); // 各轮之间的间隔
+            
+            // Update progress to current round
+            updateConsultationProgress(round); // This will show round 0, 1, or 2
 
-            // 更新三位医生的发言
+            // Update three doctors' speeches
             document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor1;
             
@@ -236,8 +271,10 @@ async function getFinalDiagnosis_fix() {
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor3;
         }
 
-        // 最后显示AI主持医生的总结
+        // After the loop, when showing AI host summary
         await new Promise(resolve => setTimeout(resolve, 3000));
+        updateConsultationProgress(3); // This will show the final summary step
+
         const aiHostSummary = document.querySelector('#aiHostSummary .diagnosis-content');
         aiHostSummary.innerHTML = `
             <p>感谢各位专家的深入讨论。经过三轮会诊，我们达成以下共识：</p>
@@ -610,3 +647,30 @@ function showAIPrompt() {
 
 // // Initialize on page load
 // document.addEventListener('DOMContentLoaded', loadModelAndPredict);
+
+function updateConsultationProgress(step) {
+    const steps = document.querySelectorAll('.progress-step');
+    const clockHand = document.querySelector('.clock-hand');
+    
+    // Reset all steps
+    steps.forEach(s => s.classList.remove('active'));
+    
+    // Activate current step
+    if (step >= 0 && step < steps.length) {
+        steps[step].classList.add('active');
+        
+        // Rotate clock hand (120 degrees per step for first 3 rounds, then to 360 for summary)
+        let rotation;
+        if (step < 3) {
+            rotation = step * 120; // 120 degrees per round (360/3 rounds)
+        } else {
+            rotation = 360; // Full rotation for summary
+        }
+        
+        // Update only the rotation part of the transform
+        clockHand.style.transform = `translate(-50%, 0) rotate(${rotation}deg)`;
+        
+        // Debug log
+        console.log(`Step ${step}: Rotating to ${rotation} degrees`);
+    }
+}
