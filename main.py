@@ -96,9 +96,9 @@ async def predict(request: PredictionRequest):
         # Make prediction
         input_name = ort_session.get_inputs()[0].name
         prediction = ort_session.run(None, {input_name: features_scaled})
-        
+        print("prediction", prediction)
         # Get probability (assuming binary classification)
-        probability = float(prediction[0][0])  # Adjust index based on your model output
+        probability = float(prediction[1][0][1])  # Adjust index based on your model output
 
         return {"probability": probability}
 
