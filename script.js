@@ -198,10 +198,10 @@ function startConsultation() {
     // Show initial scene
     document.querySelector('.initial-scene').classList.remove('hidden');
     
-    // After 3 seconds, show host invitation
-    setTimeout(() => {
-        document.querySelector('.host-invitation').classList.remove('hidden');
-    }, 3000);
+    // // After 3 seconds, show host invitation
+    // setTimeout(() => {
+    //     document.querySelector('.host-invitation').classList.remove('hidden');
+    // }, 3000);
 
     // After 6 seconds, show consultation room
     setTimeout(() => {
@@ -215,9 +215,6 @@ function showDiagnosisSection() {
 }
 
 async function getFinalDiagnosis_fix() {
-    // Show loading indicator if you have one
-    document.getElementById('loadingIndicator').style.display = 'block';
-    
     // Show loading indicator if you have one
     document.getElementById('loadingIndicator').style.display = 'block';
 
@@ -249,9 +246,11 @@ async function getFinalDiagnosis_fix() {
             }
         ];
 
+        await new Promise(resolve => setTimeout(resolve, 8000));
+
         // 逐轮显示讨论内容
         for (let round = 0; round < discussions.length; round++) {
-            await new Promise(resolve => setTimeout(resolve, 3000)); // 各轮之间的间隔
+            await new Promise(resolve => setTimeout(resolve, 4000)); // 各轮之间的间隔
             
             // Update progress to current round
             updateConsultationProgress(round); // This will show round 0, 1, or 2
@@ -260,12 +259,12 @@ async function getFinalDiagnosis_fix() {
             document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor1;
             
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 4000));
             
             document.querySelector('#finalDiagnosis2 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor2;
             
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 4000));
             
             document.querySelector('#finalDiagnosis3 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor3;
@@ -279,14 +278,9 @@ async function getFinalDiagnosis_fix() {
         aiHostSummary.innerHTML = `
             <p>感谢各位专家的深入讨论。经过三轮会诊，我们达成以下共识：</p>
             <ol>
-                <li>诊断：临床表现和实验室检查高度支持Gitelman综合征的诊断</li>
-                <li>基因诊断：建议进行SLC12A3基因检测以进一步确认诊断</li>
-                <li>需要个性化治疗方案：
-                    <ul>
-                        <li>补充电解质</li>
-                        <li>联合保钾利尿剂、COX抑制剂、ACEI/ARB规随访与监测</li>
-                        <li>管理慢性并发症</li>
-                    </ul>
+                <li>诊断：临床表现和实验室检查<strong>高度支持Gitelman综合征的诊断</strong></li>
+                <li><strong>基因诊断</strong>：建议进行SLC12A3基因检测以进一步确认诊断</li>
+                <li><strong>需要个性化治疗方案</strong>：例如补充电解质; 联合保钾利尿剂、COX抑制剂、ACEI/ARB；规律随访与监测;管理慢性并发症
                 </li>
             </ol>
         `;
@@ -594,8 +588,13 @@ function updatePredictionDisplay(probability) {
     probabilityValue.textContent = `${(probability * 100).toFixed(0)}%`;
     
     // Update interpretation text with the new probability
-    resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(probability * 100).toFixed(0)}%。
+    if (probability < 0.3) {
+        resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(probability * 100).toFixed(0)}%。
+        无需进行多学科会诊。`;
+    } else {    
+        resultInterpretation.textContent = `基于机器学习模型预测，患者患有 Gitelman 综合征的概率为 ${(probability * 100).toFixed(0)}%。
         建议进行多学科会诊，进一步确认诊断。`;
+    }
 }
 
 // Chat section display
