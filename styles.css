@@ -1067,7 +1067,7 @@ button:hover {
 
 .doctor-position.bottom {
     position: absolute;
-    bottom: 5%;
+    bottom: 3%;
     left: 53%;
     transform: translateX(-50%);
     width: 80%;
@@ -1564,4 +1564,42 @@ button:hover {
     transform-origin: bottom center;
     transform: translateX(-50%) rotate(0deg);
     transition: transform 1s ease;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.nav-btn {
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+    background: #1976D2;
+}
+
+.nav-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.round-text {
+    font-size: 14px;
+    color: #666;
 }

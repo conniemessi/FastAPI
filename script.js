@@ -1,3 +1,45 @@
+// 将discussions定义为全局变量
+const discussions = [
+    // 第一轮：初步讨论
+    {
+        doctor1: `从遗传学角度来看，患者的症状高度符合Gitelman综合征的特征。这是一种常染色体隐性遗传病，主要影响SLC12A3基因。建议进行基因检测确认诊断。`,
+        doctor2: `但我们需要先排除其他可能导致低钾血症的况。比如，患者是否有长期服用利尿剂或者有严重的腹泻病史？`,
+        doctor3: `从实验室检查来看，患者不仅有低钾血症，还伴有低镁血症和代谢性碱中毒，尿钾排泄增加。这些指标都支持Gitelman综合征的诊断。`
+    },
+    // 第二轮：深入讨论
+    {
+        doctor1: `我同意检验科的意见。特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
+        doctor2: `从肾病科的角度，我们观察到患者的血压偏低，这与肾小管钠离子重吸收障碍相符。但我建议还需要进行醛固酮和肾素活性的检测。`,
+        doctor3: `补充一点，患者的血气分析显示代谢性碱中毒，这与远曲小管功能障碍导致的氯离子重吸收缺陷是一致的。`
+    },
+    // 第三轮：治疗方案讨论
+    {
+        doctor1: `考虑到这是一个遗传性疾病，我建议对患者的家族成员也进行筛查。`,
+        doctor2: `治疗方案上，我建议口服补充氯化钾和硫酸镁，同时适当补充氯化钠。需要定期监测电解质水平。`,
+        doctor3: `我建议设定具体的监测指标：血钾维在3.5-4.0mmol/L，血镁维持在0.7-1.0mmol/L。建议每月监测一次，待稳定后可延长至3个月。`
+    }
+];
+
+let currentRound = 2;
+
+function updateDoctorContent(doctorNum, round) {
+    const content = document.querySelector(`#finalDiagnosis${doctorNum} .diagnosis-content`);
+    const roundText = document.querySelector(`#finalDiagnosis${doctorNum} .round-text`);
+    const prevBtn = document.querySelector(`#finalDiagnosis${doctorNum} .prev-btn`);
+    const nextBtn = document.querySelector(`#finalDiagnosis${doctorNum} .next-btn`);
+    
+    // Update content
+    content.innerHTML = `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + 
+        discussions[round][`doctor${doctorNum}`];
+    
+    // Update round text
+    roundText.textContent = `第${round + 1}轮`;
+    
+    // Update button states
+    prevBtn.disabled = round === 0;
+    nextBtn.disabled = round === 2;
+}
+
 let currentTestId = 1;
 
 // Global variables for model and scaler
@@ -164,7 +206,7 @@ async function getFinalDiagnosis() {
             aiHostSummary.innerHTML = `
                 <p>各位专家，感谢您们的专业意见。让我来总结一下本次会诊的主要结论：</p>
                 <ol>
-                    <li>根据患者的临床表现和实验室检查结果，确诊为Gitelman综合征；</li>
+                    <li>根据患者的临床表现和实验室检查结果，结合AI模型较高的诊断概率，确诊为Gitelman综合征；</li>
                     <li>基因诊断：建议进行SLC12A3基因检测以进一步确认诊断；</li>
                     <li>治疗方案包括：
                         <ul>
@@ -206,12 +248,40 @@ function startConsultation() {
     // After 6 seconds, show consultation room
     setTimeout(() => {
         document.querySelector('.consultation-room').classList.remove('hidden');
-    }, 6000);
+    }, 5000);
 }
 
 // Call this function when entering the diagnosis section
 function showDiagnosisSection() {
     startConsultation();
+}
+
+function attachNavigationListeners() {
+    for (let doctorNum = 1; doctorNum <= 3; doctorNum++) {
+        const prevBtn = document.querySelector(`#finalDiagnosis${doctorNum} .prev-btn`);
+        const nextBtn = document.querySelector(`#finalDiagnosis${doctorNum} .next-btn`);
+        
+        prevBtn.addEventListener('click', () => {
+            if (currentRound > 0) {
+                currentRound--;
+                updateDoctorContent(doctorNum, currentRound);
+            }
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            if (currentRound < 2) {
+                currentRound++;
+                updateDoctorContent(doctorNum, currentRound);
+            }
+        });
+    }
+}
+
+// Add this new function to update all round texts
+function updateAllRoundTexts(round) {
+    document.querySelectorAll('.round-text').forEach(text => {
+        text.textContent = `第${round + 1}轮`;
+    });
 }
 
 async function getFinalDiagnosis_fix() {
@@ -223,44 +293,26 @@ async function getFinalDiagnosis_fix() {
     
     // Start the sequential consultation display
     showDiagnosisSection();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
 
     try {
-        const discussions = [
-            // 第一轮：初步诊断
-            {
-                doctor1: `从遗传学角度来看，患者的症状高度符合Gitelman综合征的特征。这是一种常染色体隐性遗传病，主要影响SLC12A3基因。建议进行基因检测确认诊断。`,
-                doctor2: `但我们需要先排除其他可能导致低钾血症的况。比如，患者是否有长期服用利尿剂或者有严重的腹泻病史？`,
-                doctor3: `从实验室检查来看，患者不仅有低钾血症，还伴有低镁血症和代谢性碱中毒，尿钾排泄增加。这些指标都支持Gitelman综合征的诊断。`
-            },
-            // 第二轮：深入讨论
-            {
-                doctor1: `我同意检验科的意见。特别是低尿钙的表现，这是区别于Bartter综合征的重要指标。`,
-                doctor2: `从肾病科的角度，我们观察到患者的血压偏低，这与肾小管钠离子重吸收障碍相符。但我建议还需要进行醛固酮和肾素活性的检测。`,
-                doctor3: `补充一点，患者的血气分析显示代谢性碱中毒，这与远曲小管功能障碍导致的氯离子重吸收缺陷是一致的。`
-            },
-            // 第三轮：治疗方案讨论
-            {
-                doctor1: `考虑到这是一个遗传性疾病，我建议对患者的家族成员也进行筛查。`,
-                doctor2: `治疗方案上，我建议口服补充氯化钾和硫酸镁，同时适当补充氯化钠。需要定期监测电解质水平。`,
-                doctor3: `我建议设定具体的监测指标：血钾维在3.5-4.0mmol/L，血镁维持在0.7-1.0mmol/L。建议每月监测一次，待稳定后可延长至3个月。`
-            }
-        ];
-
-        await new Promise(resolve => setTimeout(resolve, 8000));
-
+        // 初始化导航按钮
+        attachNavigationListeners();
         // 逐轮显示讨论内容
         for (let round = 0; round < discussions.length; round++) {
             await new Promise(resolve => setTimeout(resolve, 4000)); // 各轮之间的间隔
             
             // Update progress to current round
             updateConsultationProgress(round); // This will show round 0, 1, or 2
+            updateAllRoundTexts(round);
 
             // Update three doctors' speeches
             document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor1;
             
             await new Promise(resolve => setTimeout(resolve, 4000));
-            
+                        
             document.querySelector('#finalDiagnosis2 .diagnosis-content').innerHTML = 
                 `<p class="round-indicator">讨论轮次 ${round + 1}/3</p>` + discussions[round].doctor2;
             
@@ -278,9 +330,9 @@ async function getFinalDiagnosis_fix() {
         aiHostSummary.innerHTML = `
             <p>感谢各位专家的深入讨论。经过三轮会诊，我们达成以下共识：</p>
             <ol>
-                <li>诊断：临床表现和实验室检查<strong>高度支持Gitelman综合征的诊断</strong></li>
+                <li>诊断：结合AI模型72%的诊断概率，临床表现和实验室检查<strong>高度支持Gitelman综合症的诊断</strong></li>
                 <li><strong>基因诊断</strong>：建议进行SLC12A3基因检测以进一步确认诊断</li>
-                <li><strong>需要个性化治疗方案</strong>：例如补充电解质; 联合保钾利尿剂、COX抑制剂、ACEI/ARB；规律随访与监测;管理慢性并发症
+                <li><strong>需要个性化治疗方案</strong>：补充电解质，口服补充钾剂和镁剂，适量氯化钠; 规律随访，监测电解质和肾功能;管理慢性并发症
                 </li>
             </ol>
         `;
@@ -496,7 +548,7 @@ async function loadModelAndPredict() {
             
             if (testValues[testName]) {
                 // Add delay for visual effect
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
                 // Update value
                 valueCell.textContent = testValues[testName].value;

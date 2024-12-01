@@ -3,10 +3,20 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.metrics import classification_report, confusion_matrix
 import json
 from skl2onnx import convert_sklearn
 from skl2onnx.common.data_types import FloatTensorType
 import onnx
+from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, BaggingClassifier
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
 # Read the data
 df = pd.read_csv('train.csv')
@@ -17,43 +27,60 @@ y = df['is_gitelman']
 
 # Split the data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
+positive_cases = X_test[y_test == 1]
+print("\nPositive cases in test set (where is_gitelman = 1):")
+print(positive_cases)
+print(f"\nNumber of positive cases in test set: {len(positive_cases)}")
 # Create and fit the scaler
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Create and train the random forest model
-rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
-rf_model.fit(X_train_scaled, y_train)
+# Create and train multiple models
+models = {
+    'Random Forest': RandomForestClassifier(n_estimators=10, random_state=42),
+    'KNN': KNeighborsClassifier(n_neighbors=5),
+    'Decision Tree': DecisionTreeClassifier(random_state=42),
+    'SVM': SVC(probability=True, random_state=42),
+    'Logistic Regression': LogisticRegression(random_state=42),
+    'Gradient Boosting': GradientBoostingClassifier(random_state=42),
+    'AdaBoost': AdaBoostClassifier(random_state=42),
+    'XGBoost': XGBClassifier(random_state=42),
+    'LightGBM': LGBMClassifier(random_state=42),
+    'Extra Trees': ExtraTreesClassifier(n_estimators=100, random_state=42),
+    'Bagging': BaggingClassifier(random_state=42),
+    'Neural Net': MLPClassifier(hidden_layer_sizes=(100, 50), max_iter=500, random_state=42)
+}
 
-# Get predictions and probabilities
-y_pred = rf_model.predict(X_test_scaled)
-y_pred_proba = rf_model.predict_proba(X_test_scaled)
-
-# Print predictions for first 10 test samples
-print("\nPredictions for first 10 samples:")
-print("True labels:", y_test.iloc[:10].values)
-print("Predicted labels:", y_pred[:10])
-print("Prediction probabilities [Class 0, Class 1]:")
-for proba in y_pred_proba[:10]:
-    print(f"[{proba[0]:.3f}, {proba[1]:.3f}]")
-
-# Print feature importance
-feature_importance = pd.DataFrame({
-    'feature': X.columns,
-    'importance': rf_model.feature_importances_
-})
-print("\nFeature Importance:")
-print(feature_importance.sort_values('importance', ascending=False))
-
-# Print model performance metrics
-from sklearn.metrics import classification_report, confusion_matrix
-print("\nClassification Report:")
-print(classification_report(y_test, y_pred))
-
-print("\nConfusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
+# Train and evaluate each model
+for name, model in models.items():
+    print(f"\n=== {name} Classifier ===")
+    
+    # Train the model
+    model.fit(X_train_scaled, y_train)
+    
+    # Get predictions
+    y_pred = model.predict(X_test_scaled)
+    y_pred_proba = model.predict_proba(X_test_scaled)
+    
+    # Print model performance metrics
+    print("\nClassification Report:")
+    print(classification_report(y_test, y_pred))
+    
+    print("\nConfusion Matrix:")
+    print(confusion_matrix(y_test, y_pred))
+    
+    # Print feature importance (for models that support it)
+    if hasattr(model, 'feature_importances_'):
+        feature_importance = pd.DataFrame({
+            'feature': X.columns,
+            'importance': model.feature_importances_
+        })
+        print("\nFeature Importance:")
+        print(feature_importance.sort_values('importance', ascending=False))
+    
+# Save the best performing model (you'll need to modify this based on your evaluation)
+best_model = models['SVM']  # Change this to your preferred model
 
 # Save scaler parameters
 scaler_params = {
@@ -65,7 +92,7 @@ with open('scaler_params.json', 'w') as f:
 
 # Convert and save model to ONNX
 initial_type = [('float_input', FloatTensorType([None, 5]))]
-onx = convert_sklearn(rf_model, initial_types=initial_type)
+onx = convert_sklearn(best_model, initial_types=initial_type)
 
 # Set IR version to 7 (widely supported)
 onx.ir_version = 7
@@ -83,16 +110,34 @@ import onnxruntime
 print(f"ONNX version: {onnx.__version__}")
 print(f"ONNX Runtime version: {onnxruntime.__version__}")
 
-# Example of how to use the model for a single prediction
-example_input = np.array([[
-    3.5,  # serum_potassium
-    62.7, # urine_potassium
-    7.472,# PH
-    23.1, # bicarbonate
-    0     # high_blood_pressure
-]])
-example_scaled = scaler.transform(example_input)
-example_prob = rf_model.predict_proba(example_scaled)
-print("\nExample prediction for single input:")
-print("Input features:", example_input[0])
-print("Prediction probabilities [Class 0, Class 1]:", [f"{prob:.3f}" for prob in example_prob[0]])
+# Example inputs
+example_inputs = [
+    np.array([[
+        3.1,  # serum_potassium
+        94.5, # urine_potassium
+        7.48, # PH
+        30,   # bicarbonate
+        0     # high_blood_pressure
+    ]]),
+    np.array([[
+        3.3,  # serum_potassium
+        18,   # urine_potassium
+        7.43, # PH
+        25,   # bicarbonate
+        0     # high_blood_pressure
+    ]])
+]
+
+# Test predictions for each example input
+for i, example_input in enumerate(example_inputs):
+    print(f"\n=== Example {i+1} Predictions ===")
+    print(f"Input features: {example_input[0]}")
+    
+    # Scale the input
+    example_scaled = scaler.transform(example_input)
+    
+    # Get predictions from each model
+    for name, model in models.items():
+        example_prob = model.predict_proba(example_scaled)
+        print(f"\n{name} prediction probabilities [Class 0, Class 1]: "
+              f"[{example_prob[0][0]:.3f}, {example_prob[0][1]:.3f}]")
