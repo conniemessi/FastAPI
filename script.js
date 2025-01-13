@@ -581,6 +581,8 @@ async function loadModelAndPredict() {
             PH: parseFloat(testValues['ph值'].value),
             bicarbonate: parseFloat(testValues['标准碳酸氢根'].value)
         };
+
+        console.log(features);
         
         // Add delay before making prediction
         await new Promise(resolve => setTimeout(resolve, 1000));

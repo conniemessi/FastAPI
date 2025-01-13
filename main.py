@@ -304,6 +304,53 @@ async def get_treatment_opinion(request: DiagnosisRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/summary")
+async def get_summary(request: DiagnosisRequest):
+    try:
+        test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
+        
+        summary = client.chat.completions.create(
+            model="moonshot-v1-8k",
+            messages=[
+                {"role": "system", 
+                 "content": """你是一位AI医疗会诊主持人。请基于以下三位专家的讨论内容，生成一个专业、全面的会诊总结。
+
+                                专家讨论记录：
+                                遗传科专家：
+                                ${discussions[0].doctor1}
+                                ${discussions[1].doctor1}
+                                ${discussions[2].doctor1}
+
+                                肾病科专家：
+                                ${discussions[0].doctor2}
+                                ${discussions[1].doctor2}
+                                ${discussions[2].doctor2}
+
+                                检验科专家：
+                                ${discussions[0].doctor3}
+                                ${discussions[1].doctor3}
+                                ${discussions[2].doctor3}
+
+                                要求：
+                                1. 总结格式应包含：诊断依据、诊疗建议、随访计划和生活建议
+                                2. 突出专家们达成共识的关键点
+                                3. 保持医学专业性的同时确保表述清晰
+                                4. 整合三位专家的意见，突出重点
+                                5. 语气应专业且富有主持人特色
+
+                                请生成一个结构化的会诊总结。`
+
+                请用中文回答，控制在150字以内。
+                在每个要点之间换行。
+                """}
+            ]
+        )
+        return {"diagnosis": summary.choices[0].message.content}
+    except Exception as e:
+        print(f"Error in get_summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
