@@ -29,8 +29,8 @@ app.add_middleware(
 # Configure OpenAI
 # Replace this with your actual OpenAI API key
 client = OpenAI(
-    api_key="sk-HkrcTbpXxSmXuBRviOp43r9RV8mncrELLpR3lyEoo6jnERW2",  # 在这里将 MOONSHOT_API_KEY 替换为你从 Kimi 开放平台申请的 API Key
-    base_url="https://api.moonshot.cn/v1",
+    api_key="gzw@123",  # Changed to Xiehe credentials
+    base_url="http://10.200.213.30:1025/v1",  # Changed to Xiehe API endpoint
 )
 
 # openai.api_key = "sk-FO3yus4aQ3OLusojMZXp26LXHiTZFv6pnPDNtDT70pTIeeAG"
@@ -132,7 +132,7 @@ async def analyze_symptoms(request: DiagnosisRequest):
     try:
         # openai.ChatCompletion.create
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",  # or "gpt-3.5-turbo" if you have access
+            model="taichu",  # Changed model
             messages=[
                 {"role": "system",
                  "content": "You are a medical diagnostic assistant specialized in Gitelman syndrome."},
@@ -164,7 +164,7 @@ async def get_genetic_opinion(request: DiagnosisRequest):
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
         first_opinion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",  # Changed model
             messages=[
                 {"role": "system", 
                  "content": """You are Dr. Smith, a genetic specialist focusing on hereditary kidney disorders.
@@ -208,7 +208,7 @@ async def get_lab_opinion(request: DiagnosisRequest):
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
         third_opinion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",  # Changed model
             messages=[
                 {"role": "system", 
                  "content": """You are Dr. Chen, a laboratory medicine specialist. 
@@ -258,7 +258,7 @@ async def get_treatment_opinion(request: DiagnosisRequest):
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
         second_opinion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",  # Changed model
             messages=[
                 {"role": "system", 
                  "content": """You are Dr. Johnson, a treatment specialist.
@@ -310,7 +310,7 @@ async def get_summary(request: DiagnosisRequest):
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
         summary = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",  # Changed model
             messages=[
                 {"role": "system", 
                  "content": """你是一位AI医疗会诊主持人。请基于以下三位专家的讨论内容，生成一个专业、全面的会诊总结。
