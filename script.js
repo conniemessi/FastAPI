@@ -134,38 +134,47 @@ function formatDoctorResponse(analysis) {
 }
 
 async function getFinalDiagnosis() {
-    const symptoms = document.getElementById('symptoms').value;
-    const patientHistory = document.getElementById('patientHistory').value;
-    const testResults = {};
-    
-    document.querySelectorAll('.test-result-item').forEach(item => {
-        const testName = item.querySelector('.test-name').textContent;
-        const testValue = item.querySelector('.test-value').value;
-        const testUnit = item.querySelector('.test-unit').textContent;
-        
-        if (testName && testValue) {
-            testResults[testName] = {
-                value: testValue,
-                unit: testUnit
-            };
-        }
-    });
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
 
-    const requestData = {
-        symptoms,
-        patient_history: patientHistory,
-        test_results: testResults
-    };
-
-    console.log(requestData);
-
+    // Show the diagnosis section
     document.getElementById('diagnosisSection').style.display = 'block';
     
-    // Step 1: Show all doctor images
-    // showAllDoctorImages();
+    // Start the consultation display
+    showDiagnosisSection();
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     try {
-        // Step 2: Sequentially fetch and display diagnoses
+        const symptoms = document.getElementById('symptoms').value;
+        const patientHistory = document.getElementById('patientHistory').value;
+        const testResults = {};
+        
+        // Collect test results
+        document.querySelectorAll('.test-result-item').forEach(item => {
+            const testName = item.querySelector('.test-name').textContent;
+            const testValue = item.querySelector('.test-value').value;
+            const testUnit = item.querySelector('.test-unit').textContent;
+            
+            if (testName && testValue) {
+                testResults[testName] = {
+                    value: testValue,
+                    unit: testUnit
+                };
+            }
+        });
+
+        const requestData = {
+            symptoms,
+            patient_history: patientHistory,
+            test_results: testResults
+        };
+
+        // Initialize navigation buttons
+        attachNavigationListeners();
+
+        // Round 1: Initial Discussion
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        updateConsultationProgress(0);
 
         // Get Genetic Opinion
         const geneticResponse = await fetch('http://localhost:8000/genetic-opinion', {
@@ -174,11 +183,11 @@ async function getFinalDiagnosis() {
             body: JSON.stringify(requestData)
         });
         const geneticData = await geneticResponse.json();
-        await showDoctorDiagnosis('finalDiagnosis1', geneticData.diagnosis, 0);
-
-        // Wait 1 second before next request
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 1/3</p>` + geneticData.diagnosis;
+        
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
         // Get Treatment Opinion
         const treatmentResponse = await fetch('http://localhost:8000/treatment-opinion', {
             method: 'POST',
@@ -186,11 +195,11 @@ async function getFinalDiagnosis() {
             body: JSON.stringify(requestData)
         });
         const treatmentData = await treatmentResponse.json();
-        await showDoctorDiagnosis('finalDiagnosis2', treatmentData.diagnosis, 500);
-
-        // Wait 1 second before next request
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
+        document.querySelector('#finalDiagnosis2 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 1/3</p>` + treatmentData.diagnosis;
+        
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        
         // Get Lab Opinion
         const labResponse = await fetch('http://localhost:8000/lab-opinion', {
             method: 'POST',
@@ -198,41 +207,137 @@ async function getFinalDiagnosis() {
             body: JSON.stringify(requestData)
         });
         const labData = await labResponse.json();
-        await showDoctorDiagnosis('finalDiagnosis3', labData.diagnosis, 500);
+        document.querySelector('#finalDiagnosis3 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 1/3</p>` + labData.diagnosis;
 
-        // 添加AI主持医生的总结
-        setTimeout(() => {
-            const aiHostSummary = document.querySelector('#aiHostSummary .diagnosis-content');
-            aiHostSummary.innerHTML = `
-                <p>各位专家，感谢您们的专业意见。让我来总结一下本次会诊的主要结论：</p>
-                <ol>
-                    <li>根据患者的临床表现和实验室检查结果，结合AI模型较高的诊断概率，确诊为Gitelman综合征；</li>
-                    <li>基因诊断：建议进行SLC12A3基因检测以进一步确认诊断；</li>
-                    <li>治疗方案包括：
-                        <ul>
-                            <li>口服补充钾剂和镁剂</li>
-                            <li>定期监测电解质</li>
-                            <li>适当补充氯化钠</li>
-                        </ul>
-                    </li>
-                    <li>建议每3个月随访一次，监测电解质和肾功能。</li>
-                </ol>
-                <p>请问各位专家对这个总结有补充意见吗？</p>
-            `;
-            aiHostSummary.style.display = 'block';
-        }, 4500); // 在三位专家发言后显示
+        // Round 2: Further Discussion
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        updateConsultationProgress(1);
+        updateAllRoundTexts(1);
 
-        // 显示病人回应
-        // setTimeout(() => {
-        //     const patientResponse = document.getElementById('patientResponse');
-        //     patientResponse.classList.remove('hidden');
-        //     patientResponse.classList.add('show');
-        // }, 6000); // 在AI主持总结后显示
+        // Round 2: Get updated opinions with new context
+        const round2Data = {
+            ...requestData,
+            round: 2,
+            previous_opinions: {
+                genetic: geneticData.diagnosis,
+                treatment: treatmentData.diagnosis,
+                lab: labData.diagnosis
+            }
+        };
 
-        // updateSteps(4);
+        // Get Genetic Opinion - Round 2
+        const geneticResponse2 = await fetch('http://localhost:8000/genetic-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round2Data)
+        });
+        const geneticData2 = await geneticResponse2.json();
+        document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 2/3</p>` + geneticData2.diagnosis;
+
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
+        // Get Treatment Opinion - Round 2
+        const treatmentResponse2 = await fetch('http://localhost:8000/treatment-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round2Data)
+        });
+        const treatmentData2 = await treatmentResponse2.json();
+        document.querySelector('#finalDiagnosis2 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 2/3</p>` + treatmentData2.diagnosis;
+
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
+        // Get Lab Opinion - Round 2
+        const labResponse2 = await fetch('http://localhost:8000/lab-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round2Data)
+        });
+        const labData2 = await labResponse2.json();
+        document.querySelector('#finalDiagnosis3 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 2/3</p>` + labData2.diagnosis;
+
+        // Round 3: Treatment Discussion
+        await new Promise(resolve => setTimeout(resolve, 4000));
+        updateConsultationProgress(2);
+        updateAllRoundTexts(2);
+
+        // Round 3: Get final opinions with all previous context
+        const round3Data = {
+            ...requestData,
+            round: 3,
+            previous_opinions: {
+                round1: {
+                    genetic: geneticData.diagnosis,
+                    treatment: treatmentData.diagnosis,
+                    lab: labData.diagnosis
+                },
+                round2: {
+                    genetic: geneticData2.diagnosis,
+                    treatment: treatmentData2.diagnosis,
+                    lab: labData2.diagnosis
+                }
+            }
+        };
+
+        // Get Genetic Opinion - Round 3
+        const geneticResponse3 = await fetch('http://localhost:8000/genetic-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round3Data)
+        });
+        const geneticData3 = await geneticResponse3.json();
+        document.querySelector('#finalDiagnosis1 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 3/3</p>` + geneticData3.diagnosis;
+
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
+        // Get Treatment Opinion - Round 3
+        const treatmentResponse3 = await fetch('http://localhost:8000/treatment-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round3Data)
+        });
+        const treatmentData3 = await treatmentResponse3.json();
+        document.querySelector('#finalDiagnosis2 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 3/3</p>` + treatmentData3.diagnosis;
+
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
+        // Get Lab Opinion - Round 3
+        const labResponse3 = await fetch('http://localhost:8000/lab-opinion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(round3Data)
+        });
+        const labData3 = await labResponse3.json();
+        document.querySelector('#finalDiagnosis3 .diagnosis-content').innerHTML = 
+            `<p class="round-indicator">讨论轮次 3/3</p>` + labData3.diagnosis;
+
+        // Final Summary
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        updateConsultationProgress(3);
+
+        // Get final summary from the backend
+        const summaryResponse = await fetch('http://localhost:8000/summary', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+        const summaryData = await summaryResponse.json();
+
+        const aiHostSummary = document.querySelector('#aiHostSummary .diagnosis-content');
+        aiHostSummary.innerHTML = summaryData.diagnosis;
+        aiHostSummary.style.display = 'block';
+
     } catch (error) {
         console.error('Error:', error);
         alert('Error getting diagnosis: ' + error.message);
+    } finally {
+        document.getElementById('loadingIndicator').style.display = 'none';
     }
 }
 

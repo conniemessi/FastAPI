@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Any
 import openai
 from openai import OpenAI
 import os
@@ -28,12 +28,22 @@ app.add_middleware(
 
 # Configure OpenAI
 # Replace this with your actual OpenAI API key
-client = OpenAI(
-    api_key="gzw@123",  # Changed to Xiehe credentials
-    base_url="http://10.200.213.30:1025/v1",  # Changed to Xiehe API endpoint
-)
+# client = OpenAI(
+#     api_key="gzw@123",  # Changed to Xiehe credentials
+#     base_url="http://10.200.213.30:1025/v1",  # Changed to Xiehe API endpoint
+# )
 
 # openai.api_key = "sk-FO3yus4aQ3OLusojMZXp26LXHiTZFv6pnPDNtDT70pTIeeAG"
+
+client = OpenAI(
+    api_key="sk-HkrcTbpXxSmXuBRviOp43r9RV8mncrELLpR3lyEoo6jnERW2",
+    base_url="https://api.moonshot.cn/v1",
+)
+
+# client = OpenAI(
+#     api_key="sk-defb1a91d2084a7a9bb981c40a5bbeea",
+#     base_url="https://api.deepseek.com/v1",
+# )
 
 @app.get("/")
 async def root():
@@ -120,8 +130,13 @@ async def get_scaler_params():
 
 class DiagnosisRequest(BaseModel):
     symptoms: str
-    test_results: Optional[Dict[str, str]] = None
     patient_history: Optional[str] = None
+    test_results: Optional[Dict[str, Any]] = None
+    round: Optional[int] = 1
+    previous_opinions: Optional[Dict[str, Any]] = None
+
+    class Config:
+        extra = "allow"  # Allow extra fields
 
     
 @app.post("/analyze-symptoms")
@@ -132,7 +147,7 @@ async def analyze_symptoms(request: DiagnosisRequest):
     try:
         # openai.ChatCompletion.create
         completion = client.chat.completions.create(
-            model="taichu",  # Changed model
+            model="moonshot-v1-8k",  #model="taichu",  # Changed model
             messages=[
                 {"role": "system",
                  "content": "You are a medical diagnostic assistant specialized in Gitelman syndrome."},
@@ -162,42 +177,55 @@ async def analyze_symptoms(request: DiagnosisRequest):
 async def get_genetic_opinion(request: DiagnosisRequest):
     try:
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
+        round_num = getattr(request, 'round', 1)
+        previous_opinions = getattr(request, 'previous_opinions', {})
         
-        first_opinion = client.chat.completions.create(
-            model="taichu",  # Changed model
+        # Customize prompt based on round
+        if round_num == 1:
+            system_content = """You are Dr. Smith, a genetic specialist focusing on hereditary kidney disorders.
+            For initial Gitelman syndrome diagnosis, consider:
+            1. Age of onset (青少年或成年发病)
+            2. Family history (家族史)
+            3. Genetic testing recommendations (SLC12A3基因)
+            4. Differential diagnosis from Bartter syndrome"""
+        elif round_num == 2:
+            system_content = """You are Dr. Smith. After reviewing initial opinions, provide detailed genetic analysis.
+            Focus on:
+            1. Genetic testing strategy
+            2. Family screening recommendations
+            3. Genotype-phenotype correlations"""
+        else:
+            system_content = """You are Dr. Smith. This is the final round.
+            Provide comprehensive genetic consultation including:
+            1. Final genetic diagnosis
+            2. Family screening plan
+            3. Long-term genetic counseling recommendations"""
+
+        # Include previous opinions in the prompt if available
+        previous_context = ""
+        if previous_opinions:
+            previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
+        
+        completion = client.chat.completions.create(
+            model="moonshot-v1-8k",
             messages=[
-                {"role": "system", 
-                 "content": """You are Dr. Smith, a genetic specialist focusing on hereditary kidney disorders.
-                 For Gitelman syndrome diagnosis, consider:
-                 1. Age of onset (青少年或成年发病)
-                 2. Family history (家族史)
-                 3. Genetic testing recommendations (SLC12A3基因)
-                 4. Differential diagnosis from Bartter syndrome"""},
+                {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
-                请分析以下病例是否符合 Gitelman 综合征的遗传特征：
+                请分析以下病例的遗传学特征：
                 症状：{request.symptoms}
                 病史：{request.patient_history or 'Not provided'}
                 检验结果：{test_results_str or 'Not provided'}
+                {previous_context}
 
-                请提供以下分析：
-                1. 遗传可能性分析：
-                   - 发病年龄特征
-                   - 家族史特征
-                   - 与 Gitelman 综合征的符合程度
-                
-                2. 推荐的遗传检测：
-                   - SLC12A3基因突变检测必要性
-                   - 家族成员筛查建议
-                
-                3. 诊断依据：
-                   请明确列出支持 Gitelman 综合征诊断的遗传学依据
+                第{round_num}轮讨论要求：
+                {get_genetic_round_requirements(round_num)}
 
                 请用中文回答，控制在150字以内。
                 在每个要点之间换行。
                 """}
             ]
         )
-        return {"diagnosis": first_opinion.choices[0].message.content}
+        return {"diagnosis": completion.choices[0].message.content}
     except Exception as e:
         print(f"Error in get_genetic_opinion: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -206,92 +234,144 @@ async def get_genetic_opinion(request: DiagnosisRequest):
 async def get_lab_opinion(request: DiagnosisRequest):
     try:
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
+        round_num = getattr(request, 'round', 1)
+        previous_opinions = getattr(request, 'previous_opinions', {})
         
-        third_opinion = client.chat.completions.create(
-            model="taichu",  # Changed model
+        # Customize prompt based on round
+        if round_num == 1:
+            system_content = """You are Dr. Chen, a laboratory medicine specialist.
+            For initial Gitelman syndrome diagnosis, focus on:
+            1. Primary criteria:
+               - 低血钾: K+ < 3.5 mmol/L
+               - 肾性失钾: 24h尿钾 > 20mmol
+            2. Supporting criteria:
+               - 代谢性碱中毒
+               - 血压正常或偏低
+               - 低血镁
+               - 低尿钙"""
+        elif round_num == 2:
+            system_content = """You are Dr. Chen. After reviewing initial findings,
+            provide detailed analysis of:
+            1. Electrolyte patterns
+            2. Acid-base balance
+            3. Additional recommended tests"""
+        else:
+            system_content = """You are Dr. Chen. This is the final round.
+            Provide comprehensive lab interpretation including:
+            1. Final lab diagnosis
+            2. Monitoring recommendations
+            3. Key parameters for follow-up"""
+
+        # Include previous opinions in the prompt if available
+        previous_context = ""
+        if previous_opinions:
+            previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
+        
+        completion = client.chat.completions.create(
+            model="moonshot-v1-8k",
             messages=[
-                {"role": "system", 
-                 "content": """You are Dr. Chen, a laboratory medicine specialist. 
-                 Follow this diagnostic pathway for Gitelman syndrome:
-                 1. Primary criteria:
-                    - 低血钾: K+ < 3.5 mmol/L
-                    - 肾性失钾: 24h尿钾 > 20mmol (当K+ < 3.0mmol/L时)
-                              24h尿钾 > 25mmol (当K+ < 3.5mmol/L时)
-                 2. Supporting criteria:
-                    - 代谢性碱中毒
-                    - 血压正常或偏低
-                    - 低血镁
-                    - 低尿钙"""},
+                {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
                 请分析以下检验结果：
                 症状：{request.symptoms}
                 病史：{request.patient_history or 'Not provided'}
                 检验结果：{test_results_str or 'Not provided'}
+                {previous_context}
 
-                请提供以下分析：
-                1. 主要诊断指标分析：
-                   - 血钾水平及肾性失钾评估
-                   - 血气分析结果
-                   - 血压情况
-                
-                2. 辅助诊断指标分析：
-                   - 血镁水平
-                   - 尿钙水平
-                   - 其他电解质异常
-                
-                3. 诊断依据：
-                   请明确列出符合和不符合Gitelman综合征诊断的实验室检查证据
+                第{round_num}轮讨论要求：
+                {get_lab_round_requirements(round_num)}
 
                 请用中文回答，控制在150字以内。
                 在每个要点之间换行。
                 """}
             ]
         )
-        return {"diagnosis": third_opinion.choices[0].message.content}
+        return {"diagnosis": completion.choices[0].message.content}
     except Exception as e:
         print(f"Error in get_lab_opinion: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_genetic_round_requirements(round_num):
+    if round_num == 1:
+        return """
+        1. 初步遗传学评估
+        2. 基因检测建议
+        3. 家族史分析
+        """
+    elif round_num == 2:
+        return """
+        1. 结合其他专家意见完善遗传学分析
+        2. 详细的基因检测方案
+        3. 家族成员筛查建议
+        """
+    else:
+        return """
+        1. 最终遗传学诊断意见
+        2. 完整的家族筛查计划
+        3. 遗传咨询建议
+        """
+
+def get_lab_round_requirements(round_num):
+    if round_num == 1:
+        return """
+        1. 初步实验室检查分析
+        2. 关键指标解读
+        3. 补充检查建议
+        """
+    elif round_num == 2:
+        return """
+        1. 结合其他专家意见完善检验分析
+        2. 详细的电解质紊乱分析
+        3. 酸碱平衡评估
+        """
+    else:
+        return """
+        1. 最终实验室诊断意见
+        2. 长期监测指标建议
+        3. 随访检查计划
+        """
+
 @app.post("/treatment-opinion")
 async def get_treatment_opinion(request: DiagnosisRequest):
     try:
+        print(f"Received request data: {request}")  # Debug log
+        
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
+        round_num = request.round
+        previous_opinions = request.previous_opinions or {}
+        
+        print(f"Round: {round_num}")  # Debug log
+        print(f"Previous opinions: {previous_opinions}")  # Debug log
+
+        # Customize prompt based on round
+        if round_num == 1:
+            system_content = """You are Dr. Johnson, a treatment specialist. 
+            Provide initial treatment recommendations based on the symptoms and test results."""
+        elif round_num == 2:
+            system_content = """You are Dr. Johnson. Consider your colleagues' initial opinions and 
+            provide more detailed treatment recommendations. Focus on potential complications and monitoring needs."""
+        else:
+            system_content = """You are Dr. Johnson. This is the final round. 
+            Provide concrete treatment plan and follow-up schedule based on the full discussion."""
+
+        # Include previous opinions in the prompt if available
+        previous_context = ""
+        if previous_opinions:
+            previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
         
         second_opinion = client.chat.completions.create(
-            model="taichu",  # Changed model
+            model="moonshot-v1-8k",
             messages=[
-                {"role": "system", 
-                 "content": """You are Dr. Johnson, a treatment specialist.
-                 Follow these treatment principles for Gitelman syndrome:
-                 1. 个体化治疗评估标准：
-                    - 电解质补充需求
-                    - 是否需要联合用药
-                    - 随访监测要求
-                    - 并发症管理
-                 2. 治疗方案包括：
-                    - 补充电解质
-                    - 酌情联合保钾利尿剂、COX抑制剂、ACEI/ARB
-                    - 规律随访与监测
-                    - 管理慢性并发症"""},
+                {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
                 基于以下患者信息制定治疗方案：
                 症状：{request.symptoms}
                 病史：{request.patient_history or 'Not provided'}
                 检验结果：{test_results_str or 'Not provided'}
+                {previous_context}
 
-                请提供以下分析：
-                1. 治疗方案选择依据：
-                   - 症状严重程度评估
-                   - 电解质紊乱程度
-                   - 并发症风险评估
-                
-                2. 具体治疗建议：
-                   - 电解质补充方案
-                   - 是否需要联合用药
-                   - 随访监测计划
-                
-                3. 治疗方案依据：
-                   请说明选择该治疗方案的具体原因
+                第{round_num}轮讨论要求：
+                {get_round_requirements(round_num)}
 
                 请用中文回答，控制在150字以内。
                 在每个要点之间换行。
@@ -303,42 +383,71 @@ async def get_treatment_opinion(request: DiagnosisRequest):
         print(f"Error in get_treatment_opinion: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_round_requirements(round_num):
+    if round_num == 1:
+        return """
+        1. 初步治疗方案评估
+        2. 基本用药建议
+        3. 初步监测计划
+        """
+    elif round_num == 2:
+        return """
+        1. 结合其他专家意见完善治疗方案
+        2. 详细讨论可能的并发症
+        3. 提出具体的监测指标
+        """
+    else:
+        return """
+        1. 最终治疗方案确定
+        2. 详细随访计划
+        3. 长期预后管理建议
+        """
 
 @app.post("/summary")
 async def get_summary(request: DiagnosisRequest):
     try:
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
+        # First, get all expert opinions
+        genetic_response = await get_genetic_opinion(request)
+        treatment_response = await get_treatment_opinion(request)
+        lab_response = await get_lab_opinion(request)
+
+        # Format discussions for the summary
+        discussions_str = f"""
+        专家讨论记录：
+        遗传科专家：
+        {genetic_response['diagnosis']}
+
+        治疗科专家：
+        {treatment_response['diagnosis']}
+
+        检验科专家：
+        {lab_response['diagnosis']}
+        """
+        
         summary = client.chat.completions.create(
-            model="taichu",  # Changed model
+            model="moonshot-v1-8k",
             messages=[
                 {"role": "system", 
-                 "content": """你是一位AI医疗会诊主持人。请基于以下三位专家的讨论内容，生成一个专业、全面的会诊总结。
+                 "content": """你是一位AI医疗会诊主持人。请基于专家的讨论内容，生成一个专业、全面的会诊总结。
 
-                                专家讨论记录：
-                                遗传科专家：
-                                ${discussions[0].doctor1}
-                                ${discussions[1].doctor1}
-                                ${discussions[2].doctor1}
+                要求：
+                1. 总结格式应包含：诊断依据、诊疗建议、随访计划和生活建议
+                2. 突出专家们达成共识的关键点
+                3. 保持医学专业性的同时确保表述清晰
+                4. 整合三位专家的意见，突出重点
+                5. 语气应专业且富有主持人特色
 
-                                肾病科专家：
-                                ${discussions[0].doctor2}
-                                ${discussions[1].doctor2}
-                                ${discussions[2].doctor2}
+                请生成一个结构化的会诊总结。"""},
+                {"role": "user", "content": f"""
+                基于以下专家讨论，生成会诊总结：
 
-                                检验科专家：
-                                ${discussions[0].doctor3}
-                                ${discussions[1].doctor3}
-                                ${discussions[2].doctor3}
+                {discussions_str}
 
-                                要求：
-                                1. 总结格式应包含：诊断依据、诊疗建议、随访计划和生活建议
-                                2. 突出专家们达成共识的关键点
-                                3. 保持医学专业性的同时确保表述清晰
-                                4. 整合三位专家的意见，突出重点
-                                5. 语气应专业且富有主持人特色
-
-                                请生成一个结构化的会诊总结。`
+                症状：{request.symptoms}
+                病史：{request.patient_history or 'Not provided'}
+                检验结果：{test_results_str or 'Not provided'}
 
                 请用中文回答，控制在150字以内。
                 在每个要点之间换行。
