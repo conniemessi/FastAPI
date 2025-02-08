@@ -1,7 +1,7 @@
 # main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Dict, Optional, List, Any
 import openai
 from openai import OpenAI
@@ -28,17 +28,17 @@ app.add_middleware(
 
 # Configure OpenAI
 # Replace this with your actual OpenAI API key
-# client = OpenAI(
-#     api_key="gzw@123",  # Changed to Xiehe credentials
-#     base_url="http://10.200.213.30:1025/v1",  # Changed to Xiehe API endpoint
-# )
+client = OpenAI(
+    api_key="gzw@123",  # Changed to Xiehe credentials
+    base_url="http://10.200.213.30:1025/v1",  # Changed to Xiehe API endpoint
+)
 
 # openai.api_key = "sk-FO3yus4aQ3OLusojMZXp26LXHiTZFv6pnPDNtDT70pTIeeAG"
 
-client = OpenAI(
-    api_key="sk-HkrcTbpXxSmXuBRviOp43r9RV8mncrELLpR3lyEoo6jnERW2",
-    base_url="https://api.moonshot.cn/v1",
-)
+# client = OpenAI(
+#     api_key="sk-HkrcTbpXxSmXuBRviOp43r9RV8mncrELLpR3lyEoo6jnERW2",
+#     base_url="https://api.moonshot.cn/v1",
+# )
 
 # client = OpenAI(
 #     api_key="sk-defb1a91d2084a7a9bb981c40a5bbeea",
@@ -147,7 +147,7 @@ async def analyze_symptoms(request: DiagnosisRequest):
     try:
         # openai.ChatCompletion.create
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",  #model="taichu",  # Changed model
+            model="taichu",  #model="taichu",  # Changed model
             messages=[
                 {"role": "system",
                  "content": "You are a medical diagnostic assistant specialized in Gitelman syndrome."},
@@ -207,7 +207,7 @@ async def get_genetic_opinion(request: DiagnosisRequest):
             previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
         
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
@@ -220,7 +220,7 @@ async def get_genetic_opinion(request: DiagnosisRequest):
                 第{round_num}轮讨论要求：
                 {get_genetic_round_requirements(round_num)}
 
-                请用中文回答，控制在150字以内。
+                请用中文回答，控制在80字以内。
                 在每个要点之间换行。
                 """}
             ]
@@ -268,7 +268,7 @@ async def get_lab_opinion(request: DiagnosisRequest):
             previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
         
         completion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
@@ -281,7 +281,7 @@ async def get_lab_opinion(request: DiagnosisRequest):
                 第{round_num}轮讨论要求：
                 {get_lab_round_requirements(round_num)}
 
-                请用中文回答，控制在150字以内。
+                请用中文回答，控制在80字以内。
                 在每个要点之间换行。
                 """}
             ]
@@ -360,7 +360,7 @@ async def get_treatment_opinion(request: DiagnosisRequest):
             previous_context = f"\n前轮讨论意见：\n{json.dumps(previous_opinions, ensure_ascii=False, indent=2)}"
         
         second_opinion = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",
             messages=[
                 {"role": "system", "content": system_content},
                 {"role": "user", "content": f"""
@@ -373,7 +373,7 @@ async def get_treatment_opinion(request: DiagnosisRequest):
                 第{round_num}轮讨论要求：
                 {get_round_requirements(round_num)}
 
-                请用中文回答，控制在150字以内。
+                请用中文回答，控制在80字以内。
                 在每个要点之间换行。
                 """}
             ]
@@ -427,7 +427,7 @@ async def get_summary(request: DiagnosisRequest):
         """
         
         summary = client.chat.completions.create(
-            model="moonshot-v1-8k",
+            model="taichu",
             messages=[
                 {"role": "system", 
                  "content": """你是一位AI医疗会诊主持人。请基于专家的讨论内容，生成一个专业、全面的会诊总结。
@@ -449,7 +449,7 @@ async def get_summary(request: DiagnosisRequest):
                 病史：{request.patient_history or 'Not provided'}
                 检验结果：{test_results_str or 'Not provided'}
 
-                请用中文回答，控制在150字以内。
+                请用中文回答，控制在120字以内。
                 在每个要点之间换行。
                 """}
             ]
@@ -459,6 +459,94 @@ async def get_summary(request: DiagnosisRequest):
         print(f"Error in get_summary: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     
+
+class TestResult(BaseModel):
+    value: str
+    unit: str
+
+class ChatRequest(BaseModel):
+    symptoms: str
+    patient_history: str
+    test_results: Dict[str, TestResult]
+    chat_stage: str = Field(..., description="One of: symptoms, test_results, diagnosis")
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+class ChatResponse(BaseModel):
+    messages: List[ChatMessage]
+
+@app.post("/generate-chat")
+async def generate_chat(request: ChatRequest):
+    try:
+        # Format test results for prompt
+        test_results_str = "\n".join([
+            f"{name}: {result.value} {result.unit}"
+            for name, result in request.test_results.items()
+        ])
+        
+        # Create prompt based on chat stage
+        if request.chat_stage == "symptoms":
+            prompt = f"""
+            你是一位经验丰富的医生，正在与疑似Gitelman综合征的患者进行初步问诊。
+            患者主诉：{request.symptoms}
+            病史：{request.patient_history}
+            
+            请生成一段医生和患者关于症状的对话，包括：
+            1. 询问具体症状
+            2. 了解发病时间和特点
+            3. 相关症状的追问
+            
+            以对话形式输出，保持自然流畅。
+            """
+        elif request.chat_stage == "test_results":
+            prompt = f"""
+            基于以下检验结果进行解释和讨论：
+            {test_results_str}
+            
+            请生成一段医生解释检验结果的对话。
+            """
+        else:
+            prompt = f"""
+            基于症状和检验结果，进行诊断总结：
+            症状：{request.symptoms}
+            检验结果：{test_results_str}
+            
+            请生成一段关于诊断和建议的对话。
+            """
+
+        # Get response from LLM
+        completion = client.chat.completions.create(
+            model="taichu",
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": "请生成医生和患者的对话内容"}
+            ]
+        )
+
+        # Parse the response
+        raw_response = completion.choices[0].message.content
+        messages = []
+        
+        for line in raw_response.split('\n'):
+            line = line.strip()
+            if line.startswith('医生：'):
+                messages.append(ChatMessage(
+                    role="doctor",
+                    content=line.replace('医生：', '').strip()
+                ))
+            elif line.startswith('患者：'):
+                messages.append(ChatMessage(
+                    role="patient",
+                    content=line.replace('患者：', '').strip()
+                ))
+
+        return ChatResponse(messages=messages)
+
+    except Exception as e:
+        print(f"Error in generate_chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

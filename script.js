@@ -757,38 +757,182 @@ function updatePredictionDisplay(probability) {
 }
 
 // Chat section display
-function showChatSection() {
-    const chatSection = document.getElementById('chatSection');
-    chatSection.style.display = 'block';
+// function showChatSection_fix() {
+//     const chatSection = document.getElementById('chatSection');
+//     chatSection.style.display = 'block';
     
-    const messages = document.querySelectorAll('.chat-message');
-    let currentIndex = 0;
+//     const messages = document.querySelectorAll('.chat-message');
+//     let currentIndex = 0;
 
-    function showNextMessage() {
-        if (currentIndex < messages.length) {
-            const message = messages[currentIndex];
-            message.classList.remove('hidden');
+//     function showNextMessage() {
+//         if (currentIndex < messages.length) {
+//             const message = messages[currentIndex];
+//             message.classList.remove('hidden');
             
-            setTimeout(() => {
-                message.classList.add('show');
-            }, 50);
+//             setTimeout(() => {
+//                 message.classList.add('show');
+//             }, 50);
 
-            currentIndex++;
+//             currentIndex++;
             
-            const messageLength = message.querySelector('.message-content').textContent.length;
-            const delay = Math.max(1000, messageLength * 30);
+//             const messageLength = message.querySelector('.message-content').textContent.length;
+//             const delay = Math.max(1000, messageLength * 30);
             
-            setTimeout(showNextMessage, delay);
-        } else {
-            // setTimeout(() => {
-            //     document.getElementById('predictionSection').style.display = 'block';
-            //     loadModelAndPredict();
-            // }, 1000);
-        }
+//             setTimeout(showNextMessage, delay);
+//         } else {
+//             // setTimeout(() => {
+//             //     document.getElementById('predictionSection').style.display = 'block';
+//             //     loadModelAndPredict();
+//             // }, 1000);
+//         }
+//     }
+
+//     showNextMessage();
+// }
+
+
+async function displayChatMessages(messages) {
+    if (!Array.isArray(messages)) {
+        console.error('Invalid messages format:', messages);
+        return;
     }
 
-    showNextMessage();
+    for (const message of messages) {
+        if (!message || !message.role || !message.content) {
+            console.error('Invalid message format:', message);
+            continue;
+        }
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${message.role}-message hidden`;
+        
+        messageDiv.innerHTML = `
+            <div class="avatar">
+                <img src="images/${message.role === 'doctor' ? 'doctor1.png' : 'patient.png'}" alt="${message.role}">
+            </div>
+            <div class="message-content">
+                ${message.content}
+            </div>
+        `;
+        
+        document.querySelector('.chat-container').appendChild(messageDiv);
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        messageDiv.classList.remove('hidden');
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
+    }
 }
+
+// Modify your existing showChatSection function
+async function showChatSection() {
+    try {
+        // Get values from the form with default values if empty
+        const symptoms = document.getElementById('symptoms').value || "患者出现低钾血症，伴有手脚麻木，肌肉无力等症状";
+        const patientHistory = document.getElementById('patientHistory').value || "无特殊病史";
+        
+        // Collect test results with default values
+        const testResults = {
+            "血钾": { value: "2.8", unit: "mmol/L" },
+            "尿钾": { value: "95", unit: "mmol/24h" },
+            "血压": { value: "110/70", unit: "mmHg" },
+            "pH值": { value: "7.5", unit: "" },
+            "碳酸氢根": { value: "32", unit: "mmol/L" }
+        };
+
+        // Try to get actual values if they exist
+        document.querySelectorAll('.test-result-item').forEach(item => {
+            const testName = item.querySelector('.test-name').textContent;
+            const testValue = item.querySelector('.test-value').value;
+            const testUnit = item.querySelector('.test-unit').textContent;
+            
+            if (testName && testValue) {
+                testResults[testName] = {
+                    value: testValue,
+                    unit: testUnit
+                };
+            }
+        });
+
+        const requestData = {
+            symptoms,
+            patient_history: patientHistory,
+            test_results: testResults,
+            chat_stage: 'symptoms'  // Initial stage
+        };
+
+        console.log("Sending request data:", JSON.stringify(requestData, null, 2));
+
+        // Clear existing chat messages
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.innerHTML = '';
+
+        // Initial symptoms discussion
+        console.log("Fetching symptoms discussion...");
+        const symptomsResponse = await fetch('http://localhost:8000/generate-chat', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!symptomsResponse.ok) {
+            const errorText = await symptomsResponse.text();
+            throw new Error(`Symptoms API error: ${errorText}`);
+        }
+
+        const symptomsChat = await symptomsResponse.json();
+        console.log("Received symptoms chat:", symptomsChat);
+        
+        if (!symptomsChat.messages || !Array.isArray(symptomsChat.messages)) {
+            throw new Error('Invalid response format: messages array not found');
+        }
+
+        await displayChatMessages(symptomsChat.messages);
+
+        // Wait between sections
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Test results discussion
+        const testResultsResponse = await fetch('http://localhost:8000/generate-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...requestData,
+                chat_stage: 'test_results'
+            })
+        });
+        const testResultsChat = await testResultsResponse.json();
+        console.log("Received test_results chat:", testResultsChat);
+        await displayChatMessages(testResultsChat.messages);
+
+        // Wait between sections
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Diagnosis and recommendations
+        const diagnosisResponse = await fetch('http://localhost:8000/generate-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...requestData,
+                chat_stage: 'diagnosis'
+            })
+        });
+        const diagnosisChat = await diagnosisResponse.json();
+        console.log("Received diagnosis chat:", diagnosisChat);
+        await displayChatMessages(diagnosisChat.messages);
+
+        // Show the chat section
+        document.getElementById('chatSection').style.display = 'block';
+
+    } catch (error) {
+        console.error('Detailed error:', error);
+        alert('生成对话内容时出错: ' + error.message);
+    }
+}
+
 
 // AI prompt display
 function showAIPrompt() {

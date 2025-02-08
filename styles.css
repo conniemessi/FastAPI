@@ -1595,11 +1595,22 @@ button:hover {
 }
 
 .nav-btn:disabled {
-    background: #ccc;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
 .round-text {
     font-size: 14px;
     color: #666;
+}
+
+.chat-message {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+.chat-message:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
 }
