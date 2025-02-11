@@ -6,12 +6,15 @@
 
 pip install fastapi uvicorn openai
 
+# vpn
+连接太初大模型时，需连接协和vpn。
+
 # 启动服务
-uvicorn main:app --reload
+- uvicorn main:app --reload
 
-访问 localhost:8000
+- 访问 localhost:8000，可看到大模型调用情况。
 
-将index.html选择以浏览器打开，即可看到网页。
+- 将index.html选择以浏览器打开，即可看到网页并运行。
 
 # 测试样例（也可自行填写任何样例）
 
