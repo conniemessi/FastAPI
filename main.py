@@ -132,6 +132,7 @@ class DiagnosisRequest(BaseModel):
     symptoms: str
     patient_history: Optional[str] = None
     test_results: Optional[Dict[str, Any]] = None
+    ml_prediction: Optional[float] = None  # Add this field
     round: Optional[int] = 1
     previous_opinions: Optional[Dict[str, Any]] = None
 
@@ -408,6 +409,9 @@ async def get_summary(request: DiagnosisRequest):
     try:
         test_results_str = "\n".join([f"{k}: {v}" for k, v in (request.test_results or {}).items()])
         
+        # Get ML prediction from request
+        ml_result = f"机器学习模型预测该病例为Gitelman综合征的概率为{request.ml_prediction:.1%}" if request.ml_prediction is not None else "机器学习模型预测暂不可用"
+
         # First, get all expert opinions
         genetic_response = await get_genetic_opinion(request)
         treatment_response = await get_treatment_opinion(request)
@@ -424,24 +428,28 @@ async def get_summary(request: DiagnosisRequest):
 
         检验科专家：
         {lab_response['diagnosis']}
+
+        人工智能辅助诊断：
+        {ml_result}
         """
         
         summary = client.chat.completions.create(
             model="taichu",
             messages=[
                 {"role": "system", 
-                 "content": """你是一位AI医疗会诊主持人。请基于专家的讨论内容，生成一个专业、全面的会诊总结。
+                 "content": """你是一位AI医疗会诊主持人。请基于专家的讨论内容和机器学习模型的预测结果，生成一个专业、全面的会诊总结。
 
                 要求：
-                1. 总结格式应包含：诊断依据、诊疗建议、随访计划和生活建议
+                1. 总结格式应包含：诊断依据（包括AI预测）、诊疗建议、随访计划和生活建议
                 2. 突出专家们达成共识的关键点
-                3. 保持医学专业性的同时确保表述清晰
-                4. 整合三位专家的意见，突出重点
-                5. 语气应专业且富有主持人特色
+                3. 结合机器学习模型的预测结果，增强诊断的可信度
+                4. 整合各方意见，突出重点
+                5. 保持医学专业性的同时确保表述清晰
+                6. 语气应专业且富有主持人特色
 
                 请生成一个结构化的会诊总结。"""},
                 {"role": "user", "content": f"""
-                基于以下专家讨论，生成会诊总结：
+                基于以下专家讨论和AI预测，生成会诊总结：
 
                 {discussions_str}
 
@@ -449,8 +457,9 @@ async def get_summary(request: DiagnosisRequest):
                 病史：{request.patient_history or 'Not provided'}
                 检验结果：{test_results_str or 'Not provided'}
 
-                请用中文回答，控制在120字以内。
+                请用中文回答，控制在150字以内。
                 在每个要点之间换行。
+                特别强调机器学习模型的预测结果如何支持临床诊断。
                 """}
             ]
         )

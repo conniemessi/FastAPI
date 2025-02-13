@@ -45,6 +45,7 @@ let currentTestId = 1;
 // Global variables for model and scaler
 let scalerParams;
 let session;
+let mlPredictionResult = null; // Global variable to store prediction result
 
 function showLoading() {
     document.getElementById('loadingIndicator').style.display = 'block';
@@ -134,22 +135,19 @@ function formatDoctorResponse(analysis) {
 }
 
 async function getFinalDiagnosis() {
-    // Show loading indicator
-    document.getElementById('loadingIndicator').style.display = 'block';
-
-    // Show the diagnosis section
-    document.getElementById('diagnosisSection').style.display = 'block';
-    
-    // Start the consultation display
-    showDiagnosisSection();
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
     try {
-        const symptoms = document.getElementById('symptoms').value;
-        const patientHistory = document.getElementById('patientHistory').value;
-        const testResults = {};
+        // Show loading indicator
+        document.getElementById('loadingIndicator').style.display = 'block';
+
+        // Show the diagnosis section
+        document.getElementById('diagnosisSection').style.display = 'block';
         
+        // Start the consultation display
+        showDiagnosisSection();
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
         // Collect test results
+        const testResults = {};
         document.querySelectorAll('.test-result-item').forEach(item => {
             const testName = item.querySelector('.test-name').textContent;
             const testValue = item.querySelector('.test-value').value;
@@ -163,10 +161,28 @@ async function getFinalDiagnosis() {
             }
         });
 
+        const symptoms = document.getElementById('symptoms').value;
+        const patientHistory = document.getElementById('patientHistory').value;
+
+        // Get prediction first
+        const features = {
+            serum_potassium: parseFloat(testResults['血钾'].value),
+            urine_potassium: parseFloat(testResults['尿钾'].value),
+            high_blood_pressure: testResults['高血压(yes/no)'].value.toLowerCase() === 'yes' ? 1 : 0,
+            PH: parseFloat(testResults['pH值'].value),
+            bicarbonate: parseFloat(testResults['标准碳酸氢根'].value)
+        };
+
+        console.log("ML Features:", features);
+        mlPredictionResult = await makePrediction(features);
+        console.log("ML Prediction:", mlPredictionResult);
+
+        // Add prediction to request data
         const requestData = {
             symptoms,
             patient_history: patientHistory,
-            test_results: testResults
+            test_results: testResults,
+            ml_prediction: mlPredictionResult
         };
 
         // Initialize navigation buttons
@@ -334,8 +350,8 @@ async function getFinalDiagnosis() {
         aiHostSummary.style.display = 'block';
 
     } catch (error) {
-        console.error('Error:', error);
-        alert('Error getting diagnosis: ' + error.message);
+        console.error('Detailed error:', error);
+        alert('诊断过程出错: ' + error.message);
     } finally {
         document.getElementById('loadingIndicator').style.display = 'none';
     }
