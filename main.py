@@ -26,6 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 挂载静态文件
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Configure OpenAI
 # Replace this with your actual OpenAI API key
 client = OpenAI(
@@ -45,9 +48,13 @@ client = OpenAI(
 #     base_url="https://api.deepseek.com/v1",
 # )
 
+# @app.get("/")
+# async def root():
+#     return {"message": "Medical Diagnosis API is running"}
+
 @app.get("/")
-async def root():
-    return {"message": "Medical Diagnosis API is running"}
+async def serve_index():
+    return FileResponse('index.html')
 
 
 class PredictionRequest(BaseModel):
