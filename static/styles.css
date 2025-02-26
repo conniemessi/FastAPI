@@ -572,7 +572,7 @@ button:hover {
 .consultation-room {
     position: relative;
     min-height: 1200px;
-    min-height: 1600px;
+    min-height: 1200px;
     width: 100%;
     max-width: 1000px;
     margin: 0 auto;
@@ -582,8 +582,8 @@ button:hover {
 /* Table positioning */
 .consultation-table {
     position: absolute;
-    top: 70%;
-    left: 53%;
+    top: 60%;
+    left: 55%;
     transform: translate(-50%, -50%);
     z-index: 1;
 }
@@ -603,21 +603,30 @@ button:hover {
 }
 
 .doctor-position.top {
-    top: 30%;
-    left: 50%;
+    top: 1%;
+    left: 55%;
     transform: translateX(-50%);
 }
 
 .doctor-position.left {
-    left: 5%;
-    top: 59%;
+    left: 8%;
+    top: 49%;
     transform: translateY(-20%);
 }
 
 .doctor-position.right {
-    right: 0;
-    top: 59%;
+    right: -2%;
+    top: 49%;
     transform: translateY(-20%);
+}
+
+.doctor-position.bottom {
+    position: absolute;
+    bottom: 0%;
+    left: 55%;
+    transform: translateX(-50%);
+    width: 80%;
+    margin-top: 20px;
 }
 
 .doctor-bubble {
@@ -1065,15 +1074,6 @@ button:hover {
     box-shadow: 0 4px 6px rgba(77, 161, 255, 0.2);
 }
 
-.doctor-position.bottom {
-    position: absolute;
-    bottom: 3%;
-    left: 53%;
-    transform: translateX(-50%);
-    width: 80%;
-    margin-top: 20px;
-}
-
 .doctor-position.top .doctor-bubble {
     background-color: #ffffff; /* 特殊的背景色以区分AI主持 */
     border: 2px solid #4a90e2;
@@ -1152,7 +1152,7 @@ button:hover {
     color: #4a90e2;
     font-weight: bold;
     margin-bottom: 10px;
-    padding: 5px;
+    padding: 2px;
     background: #f0f8ff;
     border-radius: 4px;
     display: inline-block;
@@ -1499,7 +1499,7 @@ button:hover {
 } */
 
 .initial-scene, .host-invitation, .consultation-room {
-    margin: 20px 0;
+    margin: 0px 0;
     transition: opacity 0.5s ease-in-out;
 }
 

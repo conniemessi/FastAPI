@@ -27,6 +27,10 @@ app.add_middleware(
 )
 
 # 挂载静态文件
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+# Create and mount static directory
+static_dir = Path("static")
+static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Configure OpenAI
@@ -64,11 +68,6 @@ class PredictionRequest(BaseModel):
     bicarbonate: float
     high_blood_pressure: int
 
-
-# Create and mount static directory
-static_dir = Path("static")
-static_dir.mkdir(exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Load model and scaler parameters
 try:

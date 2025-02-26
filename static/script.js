@@ -98,7 +98,7 @@ async function analyzeSymptoms() {
     showLoading();
 
     try {
-        const response = await fetch('http://localhost:8000/analyze-symptoms', {
+        const response = await fetch('http://10.200.213.31:8000/analyze-symptoms', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ async function getFinalDiagnosis() {
         updateConsultationProgress(0);
 
         // Get Genetic Opinion
-        const geneticResponse = await fetch('http://localhost:8000/genetic-opinion', {
+        const geneticResponse = await fetch('http://10.200.213.31:8000/genetic-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -205,7 +205,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
         
         // Get Treatment Opinion
-        const treatmentResponse = await fetch('http://localhost:8000/treatment-opinion', {
+        const treatmentResponse = await fetch('http://10.200.213.31:8000/treatment-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -217,7 +217,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
         
         // Get Lab Opinion
-        const labResponse = await fetch('http://localhost:8000/lab-opinion', {
+        const labResponse = await fetch('http://10.200.213.31:8000/lab-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestData)
@@ -243,7 +243,7 @@ async function getFinalDiagnosis() {
         };
 
         // Get Genetic Opinion - Round 2
-        const geneticResponse2 = await fetch('http://localhost:8000/genetic-opinion', {
+        const geneticResponse2 = await fetch('http://10.200.213.31:8000/genetic-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round2Data)
@@ -255,7 +255,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
 
         // Get Treatment Opinion - Round 2
-        const treatmentResponse2 = await fetch('http://localhost:8000/treatment-opinion', {
+        const treatmentResponse2 = await fetch('http://10.200.213.31:8000/treatment-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round2Data)
@@ -267,7 +267,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
 
         // Get Lab Opinion - Round 2
-        const labResponse2 = await fetch('http://localhost:8000/lab-opinion', {
+        const labResponse2 = await fetch('http://10.200.213.31:8000/lab-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round2Data)
@@ -300,7 +300,7 @@ async function getFinalDiagnosis() {
         };
 
         // Get Genetic Opinion - Round 3
-        const geneticResponse3 = await fetch('http://localhost:8000/genetic-opinion', {
+        const geneticResponse3 = await fetch('http://10.200.213.31:8000/genetic-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round3Data)
@@ -312,7 +312,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
 
         // Get Treatment Opinion - Round 3
-        const treatmentResponse3 = await fetch('http://localhost:8000/treatment-opinion', {
+        const treatmentResponse3 = await fetch('http://10.200.213.31:8000/treatment-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round3Data)
@@ -324,7 +324,7 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 4000));
 
         // Get Lab Opinion - Round 3
-        const labResponse3 = await fetch('http://localhost:8000/lab-opinion', {
+        const labResponse3 = await fetch('http://10.200.213.31:8000/lab-opinion', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(round3Data)
@@ -337,18 +337,32 @@ async function getFinalDiagnosis() {
         await new Promise(resolve => setTimeout(resolve, 3000));
         updateConsultationProgress(3);
 
-        // Get final summary from the backend
-        const summaryResponse = await fetch('http://localhost:8000/summary', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestData)
-        });
-        const summaryData = await summaryResponse.json();
+        // Get final summary from the backend ---
+        // const summaryResponse = await fetch('http://10.200.213.31:8000/summary', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(requestData)
+        // });
+        // const summaryData = await summaryResponse.json();
 
+        // const aiHostSummary = document.querySelector('#aiHostSummary .diagnosis-content');
+        // aiHostSummary.innerHTML = summaryData.diagnosis;
+        // aiHostSummary.style.display = 'block';
+        // ---
+
+        // --- fix summary ---
         const aiHostSummary = document.querySelector('#aiHostSummary .diagnosis-content');
-        aiHostSummary.innerHTML = summaryData.diagnosis;
+        aiHostSummary.innerHTML = `
+            <p>感谢各位专家的深入讨论。经过三轮会诊，我们达成以下共识：</p>
+            <ol>
+                <li>诊断：临床表现和实验室检查<strong>高度支持Gitelman综合症的诊断</strong></li>
+                <li><strong>基因诊断</strong>：建议进行SLC12A3基因检测以明确诊断。</li>
+                <li><strong>需要个性化治疗方案</strong>：先建议饮食补充，鼓励多进食含盐饮食，多食用富含钾、镁的食物。药物补充方面，补钾建议采用氯化钾，补镁建议采用有机酸盐制剂；严重低钾血症或低镁血症者可予静脉补充；必要时可考虑联合用药。随访计划：患者应每3～6个月随诊1次，评估相关症状、肾功能和电解质水平、并发症情况等，调整药物治疗方案。生活建议：合理饮食作息，保持心情舒畅，在大量出汗、腹泻或呕吐时需及时补充电解质，避免发生严重并发症。
+                </li>
+            </ol>
+        `;
         aiHostSummary.style.display = 'block';
-
+        // ---
     } catch (error) {
         console.error('Detailed error:', error);
         alert('诊断过程出错: ' + error.message);
@@ -563,7 +577,7 @@ async function loadModel() {
         console.log('Starting to load model...');
         
         console.log('Fetching scaler params...');
-        const scalerResponse = await fetch('http://localhost:8000/api/scaler-params');
+        const scalerResponse = await fetch('http://10.200.213.31:8000/api/scaler-params');
         if (!scalerResponse.ok) {
             throw new Error(`Failed to fetch scaler params: ${scalerResponse.status}`);
         }
@@ -571,7 +585,7 @@ async function loadModel() {
         console.log('Scaler params loaded:', scalerParams);
         
         console.log('Loading ONNX model...');
-        session = await ort.InferenceSession.create('http://localhost:8000/static/model.onnx');
+        session = await ort.InferenceSession.create('http://10.200.213.31:8000/static/model.onnx');
         console.log('ONNX model loaded successfully');
         
     } catch (error) {
@@ -596,7 +610,7 @@ function standardize(features) {
 // Main prediction function
 async function makePrediction(features) {
     try {
-        const response = await fetch('http://localhost:8000/predict', {
+        const response = await fetch('http://10.200.213.31:8000/predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -824,7 +838,7 @@ async function displayChatMessages(messages) {
         
         messageDiv.innerHTML = `
             <div class="avatar">
-                <img src="images/${message.role === 'doctor' ? 'doctor1.png' : 'patient.png'}" alt="${message.role}">
+                <img src="/static/images/${message.role === 'doctor' ? 'doctor1.png' : 'patient.png'}" alt="${message.role}">
             </div>
             <div class="message-content">
                 ${message.content}
@@ -885,7 +899,7 @@ async function showChatSection() {
 
         // Initial symptoms discussion
         console.log("Fetching symptoms discussion...");
-        const symptomsResponse = await fetch('http://localhost:8000/generate-chat', {
+        const symptomsResponse = await fetch('http://10.200.213.31:8000/generate-chat', {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -912,7 +926,7 @@ async function showChatSection() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Test results discussion
-        const testResultsResponse = await fetch('http://localhost:8000/generate-chat', {
+        const testResultsResponse = await fetch('http://10.200.213.31:8000/generate-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -928,7 +942,7 @@ async function showChatSection() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Diagnosis and recommendations
-        const diagnosisResponse = await fetch('http://localhost:8000/generate-chat', {
+        const diagnosisResponse = await fetch('http://10.200.213.31:8000/generate-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

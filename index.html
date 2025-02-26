@@ -28,7 +28,7 @@
             <h2 class="symptoms">门诊 (初步诊断)</h2>
             <div class="doctor-info">
                 <span class="status-indicator status-active"></span>
-                出诊医生：刘医生（AI大模型）
+                出诊医生：刘医生（协和·太初大模型）
             </div>
             
             <div class="preliminary-consultation">
@@ -169,7 +169,7 @@
 
             <div class="lab-actions">
                 <button class="fancy-button" onclick="loadModelAndPredict()">
-                    先请AI助手自动分析化验结果，后请医生分析化验结果
+                    先请AI助手自动分析化验结果，后请医生进行综合分析
                 </button>
             </div>
         </div>
@@ -250,17 +250,17 @@
     
             <div class="chat-actions">
                 <button class="fancy-button" onclick="showChatSection()">
-                    请医生分析化验结果
+                    请医生进行综合分析
                 </button>
             </div>
         </div>
 
         <div class="panel full-width" id="chatSection">
-            <h2>化验结果分析</h2>
+            <h2>综合分析</h2>
             <div class="room-number">Room 101</div>
             <div class="doctor-info">
                 <span class="status-indicator status-active"></span>
-                出诊医生：刘医生（AI大模型）
+                出诊医生：刘医生（协和·太初大模型）
             </div>
             <div class="chat-container">
                 <!-- 血钾结果询问 -->
@@ -408,10 +408,10 @@
             <div class="consultation-room hidden">
         <!-- Nurse with Diagnosis Features -->
         <div class="nurse-character">
-            <div class="character-image">
+            <!-- <div class="character-image">
                 <img src="/static/images/nurse.png" alt="Nurse">
-            </div>
-            <div class="speech-bubble nurse-bubble">
+            </div> -->
+            <!-- <div class="speech-bubble nurse-bubble">
                 <p class="doctor-name">张护士</p>
                 <div class="diagnosis-features">
                     <h4>患者诊断特征：</h4>
@@ -422,7 +422,7 @@
                         <li>代谢性碱中毒</li>
                     </ul>
                 </div>
-            </div>
+            </div> -->
         </div>
                 <div class="doctor-position bottom">
                     <div class="doctor-character">
@@ -430,7 +430,7 @@
                             <img src="/static/images/doctor1.png" alt="Doctor 1">
                         </div>
                         <div class="speech-bubble doctor-bubble" id="finalDiagnosis1">
-                            <p class="doctor-name">刘医生（遗传专家，AI大模型）</p>
+                            <p class="doctor-name">刘医生（遗传专家，协和·太初大模型）</p>
                             <div class="diagnosis-content"></div>
                             <div class="navigation-buttons">
                                 <button class="nav-btn prev-btn">←</button>
@@ -448,7 +448,7 @@
                             <img src="/static/images/doctor2.png" alt="Doctor 2">
                         </div>
                         <div class="speech-bubble doctor-bubble" id="finalDiagnosis2">
-                            <p class="doctor-name">赵医生（肾病专家，AI大模型）</p>
+                            <p class="doctor-name">赵医生（肾病专家，协和·太初大模型）</p>
                             <div class="diagnosis-content"></div>
                             <div class="navigation-buttons">
                                 <button class="nav-btn prev-btn">←</button>
@@ -466,7 +466,7 @@
                             <img src="/static/images/doctor3.png" alt="Doctor 3">
                         </div>
                         <div class="speech-bubble doctor-bubble" id="finalDiagnosis3">
-                            <p class="doctor-name">陈医生（检验专家，AI大模型）</p>
+                            <p class="doctor-name">陈医生（检验专家，协和·太初大模型）</p>
                             <div class="diagnosis-content"></div>
                             <div class="navigation-buttons">
                                 <button class="nav-btn prev-btn">←</button>
@@ -623,7 +623,8 @@ AI_Host:
             智能模型正在处理...请稍候...
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
     <script src="/static/script.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script> -->
+    <script defer src="https://unpkg.com/onnxruntime-web/dist/ort.min.js"></script>
 </body>
 </html>
