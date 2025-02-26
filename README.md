@@ -4,7 +4,7 @@
 
 # 安装依赖
 
-pip install fastapi uvicorn openai
+pip install fastapi uvicorn openai onnxruntime
 
 # vpn
 连接太初大模型时，需连接协和vpn。
